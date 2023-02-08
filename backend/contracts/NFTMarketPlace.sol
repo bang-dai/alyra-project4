@@ -35,7 +35,9 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
 
     function listNFT(uint256 tokenId, uint256 price) public {
         require(price > 0, "Price must be greater than 0.");
-        approve(address(this), tokenId);
+        //approve(address(this), tokenId);
+        transferFrom(msg.sender, address(this), tokenId);
+
         //setApprovalForAll(address(this), true); //ne devrait marcher que si le SC est celui de la collection
         _listings[tokenId] = NFTListing(price, msg.sender);
         emit NFTListed(tokenId, price);
@@ -44,8 +46,14 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     function buyNFT(uint256 tokenId) public payable {
         NFTListing memory listing = _listings[tokenId];
         require(listing.price > 0, "NFT not listed for sale!");
+        //should the price is equal??
         require(msg.value >= listing.price, "Your price is incorrect!");
-        safeTransferFrom(address(this), msg.sender, tokenId);
+        //todo: here ERC721 should be the NFT SC address
+        ERC721(address(this)).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
         //todo: add royalties in SC
         (bool success, ) = listing.seller.call{value: listing.price}("");
         if (success) {

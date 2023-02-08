@@ -5,7 +5,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
 !developmentChains.includes(network.name)
     ? describe.skip
     : describe("NFT market place", function () {
-        let NFTMarketPlace, deployer, user1, user2
+        let NFTMarketPlace, owner, user1, user2
         const baseURI = "https://uri.com/"
 
         const createNFT = async () => {
@@ -16,7 +16,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
         }
 
         before(async () => {
-            [deployer, user1, user2] = await ethers.getSigners()
+            [owner, user1, user2] = await ethers.getSigners()
         })
 
         describe("CreateNFT", function () {
@@ -47,13 +47,49 @@ const { developmentChains } = require("../../helper-hardhat-config")
             it("should revert if not the owner", async function () {
                 const tokenId = await createNFT()
                 const tx = NFTMarketPlace.connect(user1).listNFT(tokenId, 10)
-                await expect(tx).to.be.revertedWith("ERC721: approve caller is not token owner or approved for all");
+                await expect(tx).to.be.revertedWith("ERC721: caller is not token owner or approved");
             })
 
             it("should list correctly", async function () {
                 const tokenId = await createNFT()
                 const tx = await NFTMarketPlace.listNFT(tokenId, 10)
                 await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
+            })
+        })
+
+        describe("BuyNFT", function () {
+            beforeEach(async () => {
+                await deployments.fixture(["NFTMarketPlace"])
+                NFTMarketPlace = await ethers.getContract("NFTMarketPlace")
+            })
+
+            it("Should revert if NFT is not listed", async function () {
+                const tx = NFTMarketPlace.buyNFT(123)
+                await expect(tx).to.be.revertedWith("NFT not listed for sale!");
+            })
+
+            it("Should revert if price sent is not the same as NFT price", async function () {
+                const tokenId = await createNFT()
+                const tx = await NFTMarketPlace.listNFT(tokenId, 10)
+                await tx.wait()
+                const transaction = NFTMarketPlace.buyNFT(tokenId, { value: 9 })
+                await expect(transaction).to.be.revertedWith("Your price is incorrect!");
+            })
+
+            it("Should transfert NFT to buyer and money to seller", async function () {
+                const price = "12.5"; //10eth
+                //owner paid gas fee
+                const tokenId = await createNFT()
+                const tx = await NFTMarketPlace.listNFT(tokenId, ethers.utils.parseEther(price)) //convert price to wei
+                await tx.wait()
+
+                //owner balance is now clean
+                const sellerOldBalance = await owner.getBalance()
+                const transaction = await NFTMarketPlace.connect(user1).buyNFT(tokenId, { value: ethers.utils.parseEther(price) })
+                await transaction.wait()
+                const sellerNewBalance = await owner.getBalance()
+                const profit = sellerNewBalance.sub(sellerOldBalance).toString()
+                assert.equal(profit, ethers.utils.parseEther(price).toString())
             })
         })
 
