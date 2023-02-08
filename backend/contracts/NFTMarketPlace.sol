@@ -19,6 +19,7 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     event NFTCreated(uint256 tokenId, string uri);
     event NFTListed(uint256 tokenId, uint256 price);
     event NFTTransfer(uint256 tokenId, address to);
+    event NFTCancel(uint256 tokenId, address to);
     event Withdraw(address owner, uint256 amount);
 
     constructor() ERC721("MyToken", "MTK") {}
@@ -69,7 +70,10 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
             listing.seller == msg.sender,
             "You are not the owner of this NFT!"
         );
+        transferFrom(address(this), msg.sender, tokenId);
         _clearListing(tokenId);
+
+        emit NFTCancel(tokenId, msg.sender);
     }
 
     function withdraw() public onlyOwner {

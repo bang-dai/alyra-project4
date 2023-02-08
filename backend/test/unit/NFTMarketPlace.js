@@ -50,10 +50,14 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(tx).to.be.revertedWith("ERC721: caller is not token owner or approved");
             })
 
-            it("should list correctly", async function () {
+            it("should list correctly and transfert NFT to MarketPlace", async function () {
                 const tokenId = await createNFT()
                 const tx = await NFTMarketPlace.listNFT(tokenId, 10)
                 await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
+
+                //check if new owner has nft
+                const ownerAddr = await NFTMarketPlace.ownerOf(tokenId)
+                assert.equal(ownerAddr, NFTMarketPlace.address)
             })
         })
 
@@ -76,7 +80,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(transaction).to.be.revertedWith("Your price is incorrect!");
             })
 
-            it("Should transfert NFT to buyer and money to seller", async function () {
+            it("Should transfert NFT to buyer and the money to seller", async function () {
                 const price = "12.5"; //10eth
                 //owner paid gas fee
                 const tokenId = await createNFT()
@@ -86,10 +90,17 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 //owner balance is now clean
                 const sellerOldBalance = await owner.getBalance()
                 const transaction = await NFTMarketPlace.connect(user1).buyNFT(tokenId, { value: ethers.utils.parseEther(price) })
+                //check event
+                await expect(transaction).to.emit(NFTMarketPlace, "NFTTransfer").withArgs(tokenId, user1.address)
                 await transaction.wait()
+                //check seller receive money
                 const sellerNewBalance = await owner.getBalance()
                 const profit = sellerNewBalance.sub(sellerOldBalance).toString()
                 assert.equal(profit, ethers.utils.parseEther(price).toString())
+                //check if new owner has nft
+                const ownerAddr = await NFTMarketPlace.ownerOf(tokenId)
+                assert.equal(ownerAddr, user1.address)
+
             })
         })
 
