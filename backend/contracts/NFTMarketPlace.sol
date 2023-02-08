@@ -24,12 +24,12 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
 
     constructor() ERC721("MyToken", "MTK") {}
 
-    function createNFT(string memory uri) public returns (uint256) {
+    function createNFT(string memory _uri) public returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, uri);
-        emit NFTCreated(tokenId, uri);
+        _setTokenURI(tokenId, _uri);
+        emit NFTCreated(tokenId, _uri);
 
         return tokenId;
     }
