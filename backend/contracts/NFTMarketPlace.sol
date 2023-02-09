@@ -13,10 +13,11 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     struct NFTListing {
         uint256 price;
         address seller;
+        address nftCollection;
     }
 
-    mapping(uint256 => NFTListing) private _listings;
-    event NFTCreated(uint256 tokenId, string uri);
+    mapping(address => mapping(uint256 => NFTListing)) private _listings;
+
     event NFTListed(uint256 tokenId, uint256 price);
     event NFTTransfer(uint256 tokenId, address to);
     event NFTCancel(uint256 tokenId, address to);
@@ -24,56 +25,60 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
 
     constructor() ERC721("MyToken", "MTK") {}
 
-    function createNFT(string memory _uri) public returns (uint256) {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, _uri);
-        emit NFTCreated(tokenId, _uri);
-
-        return tokenId;
-    }
-
-    function listNFT(uint256 tokenId, uint256 price) public {
-        require(price > 0, "Price must be greater than 0.");
+    function listNFT(
+        uint256 _tokenId,
+        uint256 _price,
+        address _nftCollection
+    ) public {
+        require(_price > 0, "Price must be greater than 0.");
         //approve(address(this), tokenId);
-        transferFrom(msg.sender, address(this), tokenId);
-
-        //setApprovalForAll(address(this), true); //ne devrait marcher que si le SC est celui de la collection
-        _listings[tokenId] = NFTListing(price, msg.sender);
-        emit NFTListed(tokenId, price);
+        ERC721(_nftCollection).transferFrom(
+            msg.sender,
+            address(this),
+            _tokenId
+        );
+        _listings[_nftCollection][_tokenId] = NFTListing(
+            _price,
+            msg.sender,
+            _nftCollection
+        );
+        emit NFTListed(_tokenId, _price);
     }
 
-    function buyNFT(uint256 tokenId) public payable {
-        NFTListing memory listing = _listings[tokenId];
+    function buyNFT(uint256 _tokenId, address _nftCollection) public payable {
+        NFTListing memory listing = _listings[_nftCollection][_tokenId];
         require(listing.price > 0, "NFT not listed for sale!");
         //should the price is equal??
         require(msg.value >= listing.price, "Your price is incorrect!");
         //todo: here ERC721 should be the NFT SC address
-        ERC721(address(this)).safeTransferFrom(
+        ERC721(_nftCollection).safeTransferFrom(
             address(this),
             msg.sender,
-            tokenId
+            _tokenId
         );
         //todo: add royalties in SC
         (bool success, ) = listing.seller.call{value: listing.price}("");
         if (success) {
-            _clearListing(tokenId);
-            emit NFTTransfer(tokenId, msg.sender);
+            _clearListing(_tokenId, _nftCollection);
+            emit NFTTransfer(_tokenId, msg.sender);
         }
     }
 
-    function cancelListing(uint256 tokenId) public {
-        NFTListing memory listing = _listings[tokenId];
+    function cancelListing(uint256 _tokenId, address _nftCollection) public {
+        NFTListing memory listing = _listings[_nftCollection][_tokenId];
         require(listing.price > 0, "NFT not listed for sale!");
         require(
             listing.seller == msg.sender,
             "You are not the owner of this NFT!"
         );
-        transferFrom(address(this), msg.sender, tokenId);
-        _clearListing(tokenId);
+        ERC721(_nftCollection).transferFrom(
+            address(this),
+            msg.sender,
+            _tokenId
+        );
+        _clearListing(_tokenId, _nftCollection);
 
-        emit NFTCancel(tokenId, msg.sender);
+        emit NFTCancel(_tokenId, msg.sender);
     }
 
     function withdraw() public onlyOwner {
@@ -85,8 +90,8 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
         }
     }
 
-    function _clearListing(uint256 tokenId) private {
-        _listings[tokenId].price = 0;
-        _listings[tokenId].seller = address(0);
+    function _clearListing(uint256 _tokenId, address _nftCollection) private {
+        _listings[_nftCollection][_tokenId].price = 0;
+        _listings[_nftCollection][_tokenId].seller = address(0);
     }
 }
