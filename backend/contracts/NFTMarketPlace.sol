@@ -57,7 +57,9 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
             _tokenId
         );
         //todo: add royalties in SC
-        (bool success, ) = listing.seller.call{value: listing.price}("");
+        (bool success, ) = listing.seller.call{
+            value: (listing.price * 98) / 100
+        }(""); //plateform fee = 2%
         if (success) {
             _clearListing(_tokenId, _nftCollection);
             emit NFTTransfer(_tokenId, msg.sender);
