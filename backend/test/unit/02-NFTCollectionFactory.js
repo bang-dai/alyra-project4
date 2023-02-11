@@ -94,36 +94,33 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
             it("Should transfert NFT to buyer and the money to seller", async function () {
                 const price = "10"; //10eth
-                // const contractBalance = await NFTMarketPlace.getBalance()
-                // console.log(contractBalance)
+                const priceWei = ethers.utils.parseEther(price)
+                const contractBalance = await NFTMarketPlace.provider.getBalance(NFTMarketPlaceAddr)
 
                 //owner paid gas fee
                 const tokenId = await createNFT(5)
-                const tx = await NFTMarketPlace.listNFT(tokenId, ethers.utils.parseEther(price), NFTCollectionAddr) //convert price to wei
+                const tx = await NFTMarketPlace.listNFT(tokenId, priceWei, NFTCollectionAddr) //convert price to wei
                 await tx.wait()
 
                 //owner balance is now clean because he already paid fee
                 const sellerOldBalance = await deployer.getBalance()
-                const transaction = await NFTMarketPlace.connect(user1).buyNFT(tokenId, NFTCollectionAddr, { value: ethers.utils.parseEther(price) })
+                const transaction = await NFTMarketPlace.connect(user1).buyNFT(tokenId, NFTCollectionAddr, { value: priceWei })
 
                 //check event
                 await expect(transaction).to.emit(NFTMarketPlace, "NFTTransfer").withArgs(tokenId, user1.address)
                 await transaction.wait()
 
-                //check seller receive money
-                const sellerProfit = price * 98 / 100 //seller receive 98% of price, because MP fee is 2%
+                //check seller receive 98% of his price
                 const sellerNewBalance = await deployer.getBalance()
+                const sellerProfit = priceWei * 98 / 100 //seller receive 98% of price, because MP fee is 2%            
                 const profit = sellerNewBalance.sub(sellerOldBalance).toString()
-                assert.equal(profit, ethers.utils.parseEther(sellerProfit.toString()).toString())
+                assert.equal(profit, sellerProfit)
 
                 //check marketplace get 2% fees
-                // const plateformeFee = price - sellerProfit
-                // const newContractBalance = await NFTMarketPlace.getBalance()
-                // console.log(newContractBalance)
-
-                // const earn = newContractBalance.sub(contractBalance)
-                // console.log(earn)
-
+                const plateformeFee = priceWei - sellerProfit
+                const newContractBalance = await NFTMarketPlace.provider.getBalance(NFTMarketPlaceAddr)
+                const earn = newContractBalance.sub(contractBalance).toString()
+                assert.equal(earn, plateformeFee)
 
                 //check if new owner has nft
                 const ownerAddr = await NFTCollection.ownerOf(tokenId)
