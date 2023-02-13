@@ -5,8 +5,10 @@ const CreateNFT = () => {
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
     const [file, setFile] = useState("https://via.placeholder.com/150")
+    const inputName = useRef(null)
 
     const handleCreate = async () => {
+        console.log(inputName.current.value)
         setLoading(true)
         try {
             //await addProposal(id)
@@ -50,6 +52,7 @@ const CreateNFT = () => {
                 <Stack>
                     <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
                     <CardBody>
+                        <Input placeholder='Nom' ref={inputName} />
                         <Input placeholder='Image du NFT' type="file" onChange={handleChange} />
                     </CardBody>
                     <CardFooter>

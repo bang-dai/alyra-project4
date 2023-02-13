@@ -3,17 +3,20 @@ import { useRef, useState } from 'react';
 
 const CreateCollection = () => {
     const inputName = useRef(null)
+    const inputSymbol = useRef(null)
     const inputDesc = useRef(null)
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
 
     const handleCreate = async () => {
         const name = inputName.current.value
+        const symbol = inputSymbol.current.value
         const desc = inputDesc.current.value
         setLoading(true)
 
         try {
-            //await addProposal(id)
+            //SC MarketPlace
+            //await deploy(name, symbol, Contract.addr)
             toast({
                 description: "Collection NFT créee avec succès.",
                 status: 'success',
@@ -50,8 +53,9 @@ const CreateCollection = () => {
                 <Stack>
                     <CardHeader><Heading size='md'>Créer une nouvelle collection de NFT</Heading></CardHeader>
                     <CardBody>
-                        <Input placeholder='Nom de la collection' ref={inputName} />
-                        <Textarea placeholder='Description de la collection' ref={inputDesc} />
+                        <Input placeholder='Nom: Bored Ape Yacht Club' ref={inputName} />
+                        <Input placeholder='Symbol: BAYC' ref={inputSymbol} />
+                        <Textarea placeholder='Description' ref={inputDesc} />
                     </CardBody>
                     <CardFooter>
                         <Button variant='solid' colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
