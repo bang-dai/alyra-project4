@@ -17,6 +17,8 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     }
 
     mapping(address => mapping(uint256 => NFTListing)) private _listings;
+    //array of NFTCollections address ?
+    address[] NFTcollections;
 
     event NFTListed(uint256 tokenId, uint256 price);
     event NFTTransfer(uint256 tokenId, address to);
@@ -95,5 +97,18 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     function _clearListing(uint256 _tokenId, address _nftCollection) private {
         _listings[_nftCollection][_tokenId].price = 0;
         _listings[_nftCollection][_tokenId].seller = address(0);
+    }
+
+    function tranfert(
+        uint256 _tokenId,
+        address _nftCollection,
+        address _to
+    ) external {
+        require(
+            ownerOf(_tokenId) == msg.sender,
+            "You are not the owner of the token"
+        );
+        ERC721(_nftCollection).safeTransferFrom(msg.sender, _to, _tokenId);
+        _clearListing(_tokenId, _nftCollection);
     }
 }

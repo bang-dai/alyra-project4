@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+//attention: import le fichier car modification des visibilités _name et _symbol
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -10,6 +11,8 @@ contract NFTCollection is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
     address private _marketplaceContract;
+    //stock the NFT name instead of #ID is exist
+    mapping(uint256 => string) names;
 
     event NFTCreated(uint256 tokenId, string uri);
 

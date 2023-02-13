@@ -5,7 +5,7 @@ import "./NFTCollection.sol";
 
 contract NFTCollectionFactory {
     event NFTCollectionCreated(string name, string symbol);
-    event NFTCollectionAddr(address addr);
+    event NFTCollectionAddr(address indexed addr);
 
     function deploy(
         string calldata _name,
