@@ -1,15 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "./ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract NFTMarketPlace is ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
-
+contract NFTMarketPlace is ERC721, Ownable {
     struct NFTListing {
         uint256 price;
         address seller;
@@ -24,8 +19,10 @@ contract NFTMarketPlace is ERC721URIStorage, Ownable {
     event NFTTransfer(uint256 tokenId, address to);
     event NFTCancel(uint256 tokenId, address to);
     event Withdraw(address owner, uint256 amount);
+    event NFTCollectionCreated(string name, string symbol);
+    event NFTCollectionAddr(address indexed addr);
 
-    constructor() ERC721("MyToken", "MTK") {}
+    constructor() ERC721("H2O marketplace", "H2O") {}
 
     function listNFT(
         uint256 _tokenId,
