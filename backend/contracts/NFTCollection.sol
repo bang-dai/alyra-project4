@@ -2,8 +2,7 @@
 pragma solidity 0.8.17;
 
 //attention: import le fichier car modification des visibilités _name et _symbol
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "./ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -18,6 +17,10 @@ contract NFTCollection is ERC721URIStorage, Ownable {
 
     constructor() ERC721("name", "symbol") {}
 
+    /// @notice initialize the NFT collection name and symbol
+    /// @dev This function is called by the factory
+    /// @param name the collection's name
+    /// @param symbol the collection's symbol
     function init(
         string calldata name,
         string calldata symbol,
