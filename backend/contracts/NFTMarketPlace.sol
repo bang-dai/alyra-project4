@@ -12,8 +12,6 @@ contract NFTMarketPlace is ERC721, Ownable {
     }
 
     mapping(address => mapping(uint256 => NFTListing)) private _listings;
-    //array of NFTCollections address ?
-    address[] NFTcollections;
 
     event NFTListed(uint256 tokenId, uint256 price);
     event NFTTransfer(uint256 tokenId, address to);
@@ -30,7 +28,8 @@ contract NFTMarketPlace is ERC721, Ownable {
         address _nftCollection
     ) public {
         require(_price > 0, "Price must be greater than 0.");
-        //approve(address(this), tokenId);
+        //ERC721(_nftCollection).approve(address(this), _tokenId);
+        //setApprovalForAll(address(this), true);
         ERC721(_nftCollection).transferFrom(
             msg.sender,
             address(this),
