@@ -4,8 +4,8 @@ pragma solidity 0.8.17;
 import "./NFTCollection.sol";
 
 contract NFTCollectionFactory {
-    //store created NFT collection
-    address[] NFTcollections;
+    //store created NFT collection : user_addr => [collection_addr]
+    mapping(address => address[]) NFTcollections;
 
     event NFTCollectionCreated(string name, string symbol);
     event NFTCollectionAddr(address indexed addr);
@@ -21,13 +21,16 @@ contract NFTCollectionFactory {
         // https://docs.soliditylang.org/en/latest/control-structures.html#salted-contract-creations-create2
         address addr = address(new NFTCollection{salt: salt}());
         NFTCollection(addr).init(_name, _symbol, _nftMarketPlaceAddr);
-        NFTcollections.push(addr);
+        NFTcollections[msg.sender].push(addr);
 
         emit NFTCollectionCreated(_name, _symbol);
         emit NFTCollectionAddr(addr);
     }
 
+    /**
+     * @notice return all collection address from deployer
+     **/
     function getNFTCollections() external view returns (address[] memory) {
-        return NFTcollections;
+        return NFTcollections[msg.sender];
     }
 }

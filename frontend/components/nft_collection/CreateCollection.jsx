@@ -1,3 +1,4 @@
+import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 
@@ -7,6 +8,7 @@ const CreateCollection = () => {
     const inputDesc = useRef(null)
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
+    const { deploy } = useContractNFTProvider()
 
     const handleCreate = async () => {
         const name = inputName.current.value
@@ -16,7 +18,7 @@ const CreateCollection = () => {
 
         try {
             //SC MarketPlace
-            //await deploy(name, symbol, Contract.addr)
+            await deploy(name, symbol)
             toast({
                 description: "Collection NFT créee avec succès.",
                 status: 'success',
@@ -27,7 +29,7 @@ const CreateCollection = () => {
         }
         catch (e) {
             toast({
-                description: e.error?.data?.message ?? "Une erreur inconnu s'est produite!",
+                description: e.reason ?? "Une erreur inconnu s'est produite!",
                 status: 'error',
                 isClosable: true,
             })

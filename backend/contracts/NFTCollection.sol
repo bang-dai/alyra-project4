@@ -10,17 +10,19 @@ contract NFTCollection is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
     address private _marketplaceContract;
-    //stock the NFT name instead of #ID is exist
-    mapping(uint256 => string) names;
+    //name of NFT is in metadata
+    string description;
 
     event NFTCreated(uint256 tokenId, string uri);
 
     constructor() ERC721("name", "symbol") {}
 
-    /// @notice initialize the NFT collection name and symbol
-    /// @dev This function is called by the factory
-    /// @param name the collection's name
-    /// @param symbol the collection's symbol
+    /**
+     * @notice initialize the NFT collection name and symbol
+     * @dev This function is called by the factory
+     * @param name the collection's name
+     * @param symbol the collection's symbol
+     */
     function init(
         string calldata name,
         string calldata symbol,
