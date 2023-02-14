@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 //attention: import le fichier car modification des visibilités _name et _symbol
 import "./ERC721URIStorage.sol";
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -26,18 +27,28 @@ contract NFTCollection is ERC721URIStorage, Ownable {
     function init(
         string calldata name,
         string calldata symbol,
+        string calldata desc,
+        address sender,
         address marketPlace
     ) external onlyOwner {
         _name = name;
         _symbol = symbol;
+        description = desc;
         _marketplaceContract = marketPlace;
+        transferOwnership(sender);
     }
 
-    function createNFT(string memory _uri) public returns (uint256) {
+    /**
+     * @notice create new NFT for this collection
+     * @dev This function is called by only owner
+     * @param _uri only uri need, because metadata contains name, description and image ipfs
+     */
+    function createNFT(string memory _uri) public onlyOwner returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, _uri);
+        //give permission for marketplace to trade our NFT
         setApprovalForAll(_marketplaceContract, true);
         emit NFTCreated(tokenId, _uri);
 

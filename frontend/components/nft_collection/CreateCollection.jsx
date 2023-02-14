@@ -17,8 +17,7 @@ const CreateCollection = () => {
         setLoading(true)
 
         try {
-            //SC MarketPlace
-            await deploy(name, symbol)
+            await deploy(name, symbol, desc)
             toast({
                 description: "Collection NFT créee avec succès.",
                 status: 'success',
