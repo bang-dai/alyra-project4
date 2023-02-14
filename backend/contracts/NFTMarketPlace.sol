@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "hardhat/console.sol";
 import "./ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -29,7 +30,7 @@ contract NFTMarketPlace is ERC721, Ownable {
     ) public {
         require(_price > 0, "Price must be greater than 0.");
         //ERC721(_nftCollection).approve(address(this), _tokenId);
-        //setApprovalForAll(address(this), true);
+        //ERC721(_nftCollection).setApprovalForAll(address(this), true);
         ERC721(_nftCollection).transferFrom(
             msg.sender,
             address(this),
@@ -46,6 +47,7 @@ contract NFTMarketPlace is ERC721, Ownable {
     function buyNFT(uint256 _tokenId, address _nftCollection) public payable {
         NFTListing memory listing = _listings[_nftCollection][_tokenId];
         require(listing.price > 0, "NFT not listed for sale!");
+        require(listing.seller != msg.sender, "You can't buy your NFT");
         //should the price is equal??
         require(msg.value >= listing.price, "Your price is incorrect!");
         //todo: here ERC721 should be the NFT SC address

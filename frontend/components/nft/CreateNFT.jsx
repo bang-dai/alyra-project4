@@ -1,6 +1,8 @@
-import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast } from '@chakra-ui/react';
+import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, Alert, AlertIcon } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 import { NFTStorage, File } from 'nft.storage'
+import { useContractNFTProvider } from '@/context/ContractNFTContext';
+import Link from 'next/link';
 
 
 const CreateNFT = () => {
@@ -13,6 +15,8 @@ const CreateNFT = () => {
     const inputDesc = useRef(null)
     const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY
     const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
+    const { myCollections } = useContractNFTProvider()
+
 
     const storeNFT = async () => {
         const metadata = await nftstorage.store({
@@ -67,32 +71,39 @@ const CreateNFT = () => {
 
     return (
         <Flex direction="column">
-            <Card
-                direction={{ base: 'column', sm: 'row' }}
-                overflow='hidden'
-                variant='outline'
-            >
-                <Image
-                    objectFit='cover'
-                    maxW={{ base: '100%', sm: '300px' }}
-                    src={file}
-                    alt='Preview NFT'
-                />
-                <Stack>
-                    <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
-                    <CardBody>
-                        <Input placeholder='Nom*' ref={inputName} />
-                        <Textarea placeholder='Description' ref={inputDesc} />
-                        <Input placeholder='Image* du NFT' type="file" onChange={handleChange} />
-                    </CardBody>
-                    <CardFooter>
-                        <Button variant='solid' colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
-                            Créer
-                        </Button>
-                    </CardFooter>
-                </Stack>
-            </Card>
-        </Flex>
+            {myCollections.length > 0 ? (
+                < Card
+                    direction={{ base: 'column', sm: 'row' }}
+                    overflow='hidden'
+                    variant='outline'
+                >
+                    <Image
+                        objectFit='cover'
+                        maxW={{ base: '100%', sm: '300px' }}
+                        src={file}
+                        alt='Preview NFT'
+                    />
+                    <Stack>
+                        <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
+                        <CardBody>
+                            <Input placeholder='Nom*' ref={inputName} />
+                            <Textarea placeholder='Description' ref={inputDesc} />
+                            <Input placeholder='Image* du NFT' type="file" onChange={handleChange} />
+                        </CardBody>
+                        <CardFooter>
+                            <Button colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
+                                Créer
+                            </Button>
+                        </CardFooter>
+                    </Stack>
+                </Card>) : (<Flex direction="column">
+                    <Alert status='warning' m="1rem">
+                        <AlertIcon />
+                        Vous n'avez pas encore de collection. Veuillez en créer une avant.
+                    </Alert>
+                    <Link href="collections"><Button m="1rem" colorScheme='blue'>Créer une collection.</Button></Link>
+                </Flex>)}
+        </Flex >
     );
 };
 
