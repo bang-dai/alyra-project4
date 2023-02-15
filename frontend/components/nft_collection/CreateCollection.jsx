@@ -14,8 +14,16 @@ const CreateCollection = () => {
         const name = inputName.current.value
         const symbol = inputSymbol.current.value
         const desc = inputDesc.current.value
-        setLoading(true)
+        if (name == null || name.trim().length == 0 || symbol == null || symbol.trim().length == 0) {
+            toast({
+                description: "Le nom et le symbol sont obligatoire!",
+                status: 'error',
+                isClosable: true,
+            })
+            return
+        }
 
+        setLoading(true)
         try {
             await deploy(name, symbol, desc)
             toast({

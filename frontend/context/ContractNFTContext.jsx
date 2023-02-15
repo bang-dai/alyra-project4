@@ -33,8 +33,10 @@ export const ContractNFTProvider = ({ children }) => {
     })
     //write contract
     const contract = new ethers.Contract(contractAddress, Contract.abi, signer)
+
     //read contract
     const contractRead = new ethers.Contract(contractAddress, Contract.abi, provider)
+
 
 
     useEffect(() => {
@@ -66,11 +68,12 @@ export const ContractNFTProvider = ({ children }) => {
     //get detail about collections
     const getDetail = async (collections) => {
         const asyncCollections = await Promise.all(collections.map(async (addr) => {
-            const collection = new ethers.Contract(addr, ContractCollection.abi, provider)
+            const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
             return {
-                "name": await collection.connect(address).name(),
-                "symbol": await collection.connect(address).symbol(),
-                "description": await collection.connect(address).getDescription()
+                "name": await c_NFTCollection.connect(address).name(),
+                "symbol": await c_NFTCollection.connect(address).symbol(),
+                "description": await c_NFTCollection.connect(address).getDescription(),
+                "address": addr
             }
         }))
 
@@ -81,7 +84,6 @@ export const ContractNFTProvider = ({ children }) => {
     const getMyCollections = async () => {
         const collections = await contractRead.connect(address).getMyCollections()
         setMyCollections(collections)
-        console.log("myCollections:" + collections)
         getDetail(collections)
     }
 
@@ -89,12 +91,18 @@ export const ContractNFTProvider = ({ children }) => {
     const getNFTCollections = async () => {
         const collections = await contractRead.connect(address).getNFTCollections()
         setAllCollections(collections)
-        console.log("AllCollections:" + collections)
+    }
+
+    //create a new NFT with URI for a giver collection in param
+    const createNFT = async (NFTCollectionAddr, uri) => {
+        const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
+        const tx = await c_NFTCollection.createNFT(uri)
+        await tx.wait()
     }
 
 
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails }}>
+        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT }}>
             {children}
         </ContractNFTContext.Provider>
     )
