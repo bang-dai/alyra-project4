@@ -51,6 +51,17 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
                 NFTCollection = await ethers.getContractAt("NFTCollection", NFTCollectionAddr, deployer)
             })
+
+            it("Should collection get the right description", async function () {
+                const desc = "simple description for collection"
+                const expectDesc = await NFTCollection.getDescription()
+                assert.equal(expectDesc, desc)
+            })
+
+            it("Should get my collection address", async function () {
+                const myCollections = await NFTCollectionFactory.connect(user1).getMyCollections()
+                assert.equal(NFTCollectionAddr, myCollections[0])
+            })
         })
 
         describe("CreateNFT", function () {

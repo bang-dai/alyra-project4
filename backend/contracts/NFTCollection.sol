@@ -54,4 +54,8 @@ contract NFTCollection is ERC721URIStorage, Ownable {
 
         return tokenId;
     }
+
+    function getDescription() external view returns (string memory) {
+        return description;
+    }
 }
