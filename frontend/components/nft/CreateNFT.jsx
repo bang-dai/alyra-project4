@@ -1,6 +1,6 @@
-import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, Alert, AlertIcon } from '@chakra-ui/react';
+import { Input, Select, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, Alert, AlertIcon } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
-import { NFTStorage, File } from 'nft.storage'
+import { NFTStorage } from 'nft.storage'
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import Link from 'next/link';
 
@@ -13,9 +13,11 @@ const CreateNFT = () => {
     const [image, setImage] = useState(null)
     const inputName = useRef(null)
     const inputDesc = useRef(null)
+    const inputImage = useRef(null)
+    const selectCollection = useRef(null)
     const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY
     const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
-    const { myCollections } = useContractNFTProvider()
+    const { myCollections, myCollectionsDetails, createNFT } = useContractNFTProvider()
 
 
     const storeNFT = async () => {
@@ -30,6 +32,15 @@ const CreateNFT = () => {
 
     const handleCreate = async () => {
         const name = inputName.current.value
+        const NFTCollectionAddr = selectCollection.current.value
+        if (NFTCollectionAddr == null || NFTCollectionAddr.trim().length == 0) {
+            toast({
+                description: "Veillez choisir une collection de NFT!",
+                status: 'error',
+                isClosable: true,
+            })
+            return
+        }
         if (name == null || name.trim().length == 0 || file == preview) {
             toast({
                 description: "Le nom et l'image du NFT sont obligatoire!",
@@ -38,6 +49,7 @@ const CreateNFT = () => {
             })
             return
         }
+
         setLoading(true)
         try {
             //metadata.url contain the ipfs metadata.json
@@ -46,12 +58,19 @@ const CreateNFT = () => {
                 process.exit(1)
             })
             //await call SC here
+            await createNFT(NFTCollectionAddr, metatada.url)
             toast({
                 description: "NFT créee avec succès.",
                 status: 'success',
                 isClosable: true,
             })
+            //reset values
+            inputName.current.value = null
+            inputDesc.current.value = null
+            inputImage.current.value = null
+            selectCollection.current.value = null
             URL.revokeObjectURL(file)
+            setFile(preview)
         }
         catch (e) {
             toast({
@@ -72,37 +91,44 @@ const CreateNFT = () => {
     return (
         <Flex direction="column">
             {myCollections.length > 0 ? (
-                < Card
-                    direction={{ base: 'column', sm: 'row' }}
-                    overflow='hidden'
-                    variant='outline'
-                >
-                    <Image
-                        objectFit='cover'
-                        maxW={{ base: '100%', sm: '300px' }}
-                        src={file}
-                        alt='Preview NFT'
-                    />
-                    <Stack>
-                        <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
-                        <CardBody>
-                            <Input placeholder='Nom*' ref={inputName} />
-                            <Textarea placeholder='Description' ref={inputDesc} />
-                            <Input placeholder='Image* du NFT' type="file" onChange={handleChange} />
-                        </CardBody>
-                        <CardFooter>
-                            <Button colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
-                                Créer
-                            </Button>
-                        </CardFooter>
-                    </Stack>
-                </Card>) : (<Flex direction="column">
-                    <Alert status='warning' m="1rem">
-                        <AlertIcon />
-                        Vous n'avez pas encore de collection. Veuillez en créer une avant.
-                    </Alert>
-                    <Link href="collections"><Button m="1rem" colorScheme='blue'>Créer une collection.</Button></Link>
-                </Flex>)}
+                <>
+                    <Select placeholder='Choisissez une collection de NFT' ref={selectCollection}>
+                        {myCollectionsDetails && myCollectionsDetails.map((collection, index) =>
+                            <option key={index} value={collection.address}>{collection.name}</option>
+                        )}
+
+                    </Select>
+                    < Card
+                        direction={{ base: 'column', sm: 'row' }}
+                        overflow='hidden'
+                        variant='outline'
+                    >
+                        <Image
+                            objectFit='cover'
+                            maxW={{ base: '100%', sm: '300px' }}
+                            src={file}
+                            alt='Preview NFT'
+                        />
+                        <Stack>
+                            <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
+                            <CardBody>
+                                <Input placeholder='Nom*' ref={inputName} />
+                                <Textarea placeholder='Description' ref={inputDesc} />
+                                <Input placeholder='Image* du NFT' type="file" onChange={handleChange} ref={inputImage} />
+                            </CardBody>
+                            <CardFooter>
+                                <Button colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
+                                    Créer
+                                </Button>
+                            </CardFooter>
+                        </Stack>
+                    </Card></>) : (<Flex direction="column">
+                        <Alert status='warning' m="1rem">
+                            <AlertIcon />
+                            Vous n'avez pas encore de collection. Veuillez en créer une avant.
+                        </Alert>
+                        <Link href="collections"><Button m="1rem" colorScheme='blue'>Créer une collection.</Button></Link>
+                    </Flex>)}
         </Flex >
     );
 };
