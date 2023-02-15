@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ethers } from "ethers";
 import Contract from '../../backend/artifacts/contracts/NFTCollectionFactory.sol/NFTCollectionFactory.json' //update here
+import ContractCollection from '../../backend/artifacts/contracts/NFTCollection.sol/NFTCollection.json' //update here
 import { useAccount, useBalance, useProvider, useSigner } from "wagmi";
 
 const ContractNFTContext = React.createContext(null)
@@ -18,6 +19,8 @@ export const ContractNFTProvider = ({ children }) => {
     const contractAddress = process.env.NEXT_PUBLIC_FACTORY_ADDR
     const marketplaceAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDR
     const [myCollections, setMyCollections] = useState([])
+    const [allCollections, setAllCollections] = useState([])
+    const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
 
     const { address, isConnected } = useAccount()
     //get signer && provider to call SC function
@@ -36,29 +39,62 @@ export const ContractNFTProvider = ({ children }) => {
 
     useEffect(() => {
         if (isConnected) {
-            getMyCollections()
-            getNFTCollections()
+            updateCollections()
+        }
+
+        return () => {
+            setMyCollections([])
+            setAllCollections([])
+            setMyCollectionsDetails([])
         }
     }, [isConnected, address])
 
-    //Create all SC function here
+
+    //update all collections addr
+    const updateCollections = async () => {
+        await getMyCollections()
+        await getNFTCollections()
+    }
+
+    //create new collection. attention: signer is not the msg.sender, that's why I use address in param
     const deploy = async (name, symbol, desc) => {
-        const tx = await contract.deploy(name, symbol, desc, marketplaceAddr)
+        const tx = await contract.deploy(name, symbol, desc, address, marketplaceAddr)
         await tx.wait()
+        await updateCollections()
     }
 
+    //get detail about collections
+    const getDetail = async (collections) => {
+        const asyncCollections = await Promise.all(collections.map(async (addr) => {
+            const collection = new ethers.Contract(addr, ContractCollection.abi, provider)
+            return {
+                "name": await collection.connect(address).name(),
+                "symbol": await collection.connect(address).symbol(),
+                "description": await collection.connect(address).getDescription()
+            }
+        }))
+
+        setMyCollectionsDetails(asyncCollections)
+    }
+
+    //get my created collection addr
     const getMyCollections = async () => {
-        const collections = await contractRead.getMyCollections()
+        const collections = await contractRead.connect(address).getMyCollections()
         setMyCollections(collections)
+        console.log("myCollections:" + collections)
+        getDetail(collections)
     }
 
+    //get all created collection addr
     const getNFTCollections = async () => {
-        const collections = await contractRead.getNFTCollections()
-        console.log(collections)
+        const collections = await contractRead.connect(address).getNFTCollections()
+        setAllCollections(collections)
+        console.log("AllCollections:" + collections)
     }
+
 
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, getMyCollections, myCollections }}>
+        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails }}>
             {children}
         </ContractNFTContext.Provider>
     )

@@ -1,5 +1,5 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
-import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast } from '@chakra-ui/react';
+import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 
 const CreateCollection = () => {
@@ -8,7 +8,7 @@ const CreateCollection = () => {
     const inputDesc = useRef(null)
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
-    const { deploy } = useContractNFTProvider()
+    const { deploy, myCollectionsDetails } = useContractNFTProvider()
 
     const handleCreate = async () => {
         const name = inputName.current.value
@@ -65,6 +65,22 @@ const CreateCollection = () => {
                     </CardFooter>
                 </Stack>
             </Card>
+            <Divider orientation='horizontal' mt="1rem" mb="1rem" />
+            <SimpleGrid spacing={4} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
+                {myCollectionsDetails && myCollectionsDetails.map((collection, index) =>
+                    <Card key={index}>
+                        <CardHeader>
+                            <Heading size='md'>{collection.name}</Heading>
+                        </CardHeader>
+                        <CardBody>
+                            <Text>{collection.description}</Text>
+                        </CardBody>
+                        <CardFooter>
+                            <Button>Gérer la collection</Button>
+                        </CardFooter>
+                    </Card>
+                )}
+            </SimpleGrid>
         </Flex>
     );
 };
