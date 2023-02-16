@@ -38,13 +38,13 @@ contract NFTMarketPlace is Ownable {
         address _nftCollection
     ) public onlyTokenOwner(_nftCollection, _tokenId) {
         require(_price > 0, "Price must be greater than 0.");
-        //ERC721(_nftCollection).approve(address(this), _tokenId);
-        //ERC721(_nftCollection).setApprovalForAll(address(this), true);
-        ERC721A(_nftCollection).transferFrom(
-            msg.sender,
-            address(this),
-            _tokenId
-        );
+        //ERC721A(_nftCollection).approve(address(this), _tokenId);
+        //ERC721A(_nftCollection).setApprovalForAll(address(this), true);
+        // ERC721A(_nftCollection).transferFrom(
+        //     msg.sender,
+        //     address(this),
+        //     _tokenId
+        // );
         _listings[_nftCollection][_tokenId] = NFTListing(
             _price,
             msg.sender,
@@ -59,12 +59,10 @@ contract NFTMarketPlace is Ownable {
         require(listing.seller != msg.sender, "You can't buy your NFT");
         //should the price is equal??
         require(msg.value >= listing.price, "Your price is incorrect!");
+
         //todo: here ERC721 should be the NFT SC address
-        ERC721A(_nftCollection).safeTransferFrom(
-            address(this),
-            msg.sender,
-            _tokenId
-        );
+        address owner = ERC721A(_nftCollection).ownerOf(_tokenId);
+        ERC721A(_nftCollection).transferFrom(owner, msg.sender, _tokenId);
         //todo: add royalties in SC
         (bool success, ) = listing.seller.call{
             value: (listing.price * 98) / 100
@@ -75,18 +73,17 @@ contract NFTMarketPlace is Ownable {
         }
     }
 
-    function cancelListing(uint256 _tokenId, address _nftCollection) public {
+    function cancelListing(uint256 _tokenId, address _nftCollection)
+        public
+        onlyTokenOwner(_nftCollection, _tokenId)
+    {
         NFTListing memory listing = _listings[_nftCollection][_tokenId];
         require(listing.price > 0, "NFT not listed for sale!");
-        require(
-            listing.seller == msg.sender,
-            "You are not the owner of this NFT!"
-        );
-        ERC721A(_nftCollection).transferFrom(
-            address(this),
-            msg.sender,
-            _tokenId
-        );
+        // ERC721A(_nftCollection).transferFrom(
+        //     address(this),
+        //     msg.sender,
+        //     _tokenId
+        // );
         _clearListing(_tokenId, _nftCollection);
 
         emit NFTCancel(_tokenId, msg.sender);
