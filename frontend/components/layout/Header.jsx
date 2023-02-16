@@ -14,6 +14,7 @@ const Header = ({ showSidebarButton = true, onShowSidebar }) => {
                 <Link href="/"><Image src="/h2o.jpg" width="100" height="100" alt='logo of H2O marketplace' /></Link>
             </Flex>
             <Flex justifyContent="space-around">
+                <Link href="/"><Button m="1rem">Home</Button></Link>
                 <Button m="1rem">Mes NFTs</Button>
                 <Link href="collections"><Button m="1rem">Mes collections</Button></Link>
                 <Link href="create"><Button m="1rem">Créer</Button></Link>

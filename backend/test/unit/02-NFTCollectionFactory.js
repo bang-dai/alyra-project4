@@ -82,7 +82,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
             it("should revert if not the owner", async function () {
                 const tokenId = await createNFT(2)
                 const tx = NFTMarketPlace.connect(user2).listNFT(tokenId, 10, NFTCollectionAddr)
-                await expect(tx).to.be.revertedWith("ERC721: transfer from incorrect owner");
+                await expect(tx).to.be.revertedWith("You are not the owner of the token.");
             })
 
             it("should list correctly and transfert NFT to MarketPlace", async function () {

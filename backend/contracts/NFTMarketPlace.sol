@@ -2,16 +2,17 @@
 pragma solidity ^0.8.17;
 
 import "hardhat/console.sol";
-import "./ERC721.sol";
+import "./ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract NFTMarketPlace is ERC721, Ownable {
+contract NFTMarketPlace is Ownable {
     struct NFTListing {
         uint256 price;
         address seller;
         address nftCollection;
     }
 
+    //mapping by nft_collection_address
     mapping(address => mapping(uint256 => NFTListing)) private _listings;
 
     event NFTListed(uint256 tokenId, uint256 price);
@@ -21,17 +22,25 @@ contract NFTMarketPlace is ERC721, Ownable {
     event NFTCollectionCreated(string name, string symbol);
     event NFTCollectionAddr(address indexed addr);
 
-    constructor() ERC721("H2O marketplace", "H2O") {}
+    modifier onlyTokenOwner(address _nftCollection, uint256 _tokenId) {
+        require(
+            ERC721A(_nftCollection).ownerOf(_tokenId) == msg.sender,
+            "You are not the owner of the token."
+        );
+        _;
+    }
+
+    constructor() {}
 
     function listNFT(
         uint256 _tokenId,
         uint256 _price,
         address _nftCollection
-    ) public {
+    ) public onlyTokenOwner(_nftCollection, _tokenId) {
         require(_price > 0, "Price must be greater than 0.");
         //ERC721(_nftCollection).approve(address(this), _tokenId);
         //ERC721(_nftCollection).setApprovalForAll(address(this), true);
-        ERC721(_nftCollection).transferFrom(
+        ERC721A(_nftCollection).transferFrom(
             msg.sender,
             address(this),
             _tokenId
@@ -51,7 +60,7 @@ contract NFTMarketPlace is ERC721, Ownable {
         //should the price is equal??
         require(msg.value >= listing.price, "Your price is incorrect!");
         //todo: here ERC721 should be the NFT SC address
-        ERC721(_nftCollection).safeTransferFrom(
+        ERC721A(_nftCollection).safeTransferFrom(
             address(this),
             msg.sender,
             _tokenId
@@ -73,7 +82,7 @@ contract NFTMarketPlace is ERC721, Ownable {
             listing.seller == msg.sender,
             "You are not the owner of this NFT!"
         );
-        ERC721(_nftCollection).transferFrom(
+        ERC721A(_nftCollection).transferFrom(
             address(this),
             msg.sender,
             _tokenId
@@ -101,12 +110,8 @@ contract NFTMarketPlace is ERC721, Ownable {
         uint256 _tokenId,
         address _nftCollection,
         address _to
-    ) external {
-        require(
-            ownerOf(_tokenId) == msg.sender,
-            "You are not the owner of the token"
-        );
-        ERC721(_nftCollection).safeTransferFrom(msg.sender, _to, _tokenId);
+    ) external onlyTokenOwner(_nftCollection, _tokenId) {
+        ERC721A(_nftCollection).safeTransferFrom(msg.sender, _to, _tokenId);
         _clearListing(_tokenId, _nftCollection);
     }
 }

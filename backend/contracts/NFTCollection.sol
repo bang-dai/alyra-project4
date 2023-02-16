@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 //attention: import le fichier car modification des visibilités _name et _symbol
 import "./ERC721URIStorage.sol";
+import "./ERC721AQueryable.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -16,7 +17,7 @@ contract NFTCollection is ERC721URIStorage, Ownable {
 
     event NFTCreated(uint256 tokenId, string uri);
 
-    constructor() ERC721("name", "symbol") {}
+    constructor() ERC721A("name", "symbol") {}
 
     /**
      * @notice initialize the NFT collection name and symbol
@@ -46,7 +47,7 @@ contract NFTCollection is ERC721URIStorage, Ownable {
     function createNFT(string memory _uri) public onlyOwner returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(msg.sender, tokenId);
+        _safeMint(msg.sender, 1);
         _setTokenURI(tokenId, _uri);
         //give permission for marketplace to trade our NFT
         setApprovalForAll(_marketplaceContract, true);
@@ -57,5 +58,37 @@ contract NFTCollection is ERC721URIStorage, Ownable {
 
     function getDescription() external view returns (string memory) {
         return description;
+    }
+
+    function tokensOfOwner(address owner)
+        external
+        view
+        virtual
+        returns (uint256[] memory)
+    {
+        unchecked {
+            uint256 tokenIdsIdx;
+            address currOwnershipAddr;
+            uint256 tokenIdsLength = balanceOf(owner);
+            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
+            TokenOwnership memory ownership;
+            for (
+                uint256 i = _startTokenId();
+                tokenIdsIdx != tokenIdsLength;
+                ++i
+            ) {
+                ownership = _ownershipAt(i);
+                if (ownership.burned) {
+                    continue;
+                }
+                if (ownership.addr != address(0)) {
+                    currOwnershipAddr = ownership.addr;
+                }
+                if (currOwnershipAddr == owner) {
+                    tokenIds[tokenIdsIdx++] = i;
+                }
+            }
+            return tokenIds;
+        }
     }
 }
