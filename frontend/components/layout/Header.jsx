@@ -15,7 +15,7 @@ const Header = ({ showSidebarButton = true, onShowSidebar }) => {
             </Flex>
             <Flex justifyContent="space-around">
                 <Link href="/"><Button m="1rem">Home</Button></Link>
-                <Button m="1rem">Mes NFTs</Button>
+                <Link href="mynfts"><Button m="1rem">Mes NFTs</Button></Link>
                 <Link href="collections"><Button m="1rem">Mes collections</Button></Link>
                 <Link href="create"><Button m="1rem">Créer</Button></Link>
                 <Button m="1rem">Minter</Button>

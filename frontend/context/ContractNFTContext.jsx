@@ -20,6 +20,7 @@ export const ContractNFTProvider = ({ children }) => {
     const marketplaceAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDR
     const [myCollections, setMyCollections] = useState([])
     const [allCollections, setAllCollections] = useState([])
+    const [myURIs, setMyURIs] = useState([])
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
 
     const { address, isConnected } = useAccount()
@@ -91,6 +92,7 @@ export const ContractNFTProvider = ({ children }) => {
     const getNFTCollections = async () => {
         const collections = await contractRead.connect(address).getNFTCollections()
         setAllCollections(collections)
+        getMyNFTs(collections)
     }
 
     //create a new NFT with URI for a giver collection in param
@@ -100,9 +102,19 @@ export const ContractNFTProvider = ({ children }) => {
         await tx.wait()
     }
 
+    const getMyNFTs = async (allCollections) => {
+        const asyncURIs = await Promise.all(allCollections.map(async (addr) => {
+            const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
+            const tokenIds = await c_NFTCollection.tokensOfOwner(address)
+            tokenIds.map(async (tokenId) => {
+                const uri = await c_NFTCollection.tokenURI(tokenId)
+                setMyURIs(URI => [...URI, uri])
+            })
+        }))
+    }
 
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT }}>
+        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myURIs }}>
             {children}
         </ContractNFTContext.Provider>
     )
