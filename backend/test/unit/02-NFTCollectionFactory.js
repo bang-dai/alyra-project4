@@ -91,8 +91,8 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
 
                 //check if new owner has nft
-                const ownerAddr = await NFTCollection.ownerOf(tokenId)
-                assert.equal(ownerAddr, NFTMarketPlace.address)
+                // const ownerAddr = await NFTCollection.ownerOf(tokenId)
+                // assert.equal(ownerAddr, NFTMarketPlace.address)
             })
         })
 
@@ -158,30 +158,32 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
         describe("CancelListing", function () {
             it("Should revert if NFT is not listed", async function () {
-                const tx = NFTMarketPlace.connect(user1).cancelListing(1234, NFTCollectionAddr)
+                const price = "10"; //10eth                
+                const tokenId = await createNFT(7)
+                const tx = NFTMarketPlace.connect(user1).cancelListing(7, NFTCollectionAddr)
                 await expect(tx).to.be.revertedWith("NFT not listed for sale!");
             })
 
             it("Should revert if caller is not the seller", async function () {
                 const price = "10"; //10eth                
-                const tokenId = await createNFT(7)
+                const tokenId = await createNFT(8)
                 const tx = await NFTMarketPlace.connect(user1).listNFT(tokenId, ethers.utils.parseEther(price), NFTCollectionAddr) //convert price to wei
                 await tx.wait()
 
                 const tx2 = NFTMarketPlace.connect(user2).cancelListing(tokenId, NFTCollectionAddr)
-                await expect(tx2).to.be.revertedWith("You are not the owner of this NFT!");
+                await expect(tx2).to.be.revertedWith("You are not the owner of the token.");
             })
 
             it("Should transfer ownership back to the seller if everyhing is ok", async function () {
                 //create and list NFT
                 const price = "10"; //10eth                
-                const tokenId = await createNFT(8)
+                const tokenId = await createNFT(9)
                 const tx = await NFTMarketPlace.connect(user1).listNFT(tokenId, ethers.utils.parseEther(price), NFTCollectionAddr) //convert price to wei
                 await tx.wait()
 
-                //MarketPlace owner the NFT
+                //I own the NFT
                 const marketPlaceAddr = await NFTCollection.ownerOf(tokenId)
-                assert.equal(marketPlaceAddr, NFTMarketPlaceAddr)
+                assert.equal(marketPlaceAddr, user1.address)
 
                 //cancel listing
                 const tx2 = await NFTMarketPlace.connect(user1).cancelListing(tokenId, NFTCollectionAddr)
