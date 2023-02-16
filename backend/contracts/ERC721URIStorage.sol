@@ -3,12 +3,13 @@
 
 pragma solidity ^0.8.0;
 
-import "./ERC721.sol";
+import "./ERC721A.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @dev ERC721 token with storage based token URI management.
  */
-abstract contract ERC721URIStorage is ERC721 {
+abstract contract ERC721URIStorage is ERC721A {
     using Strings for uint256;
 
     // Optional mapping for token URIs
@@ -70,5 +71,12 @@ abstract contract ERC721URIStorage is ERC721 {
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
         }
+    }
+
+    /**
+     * @dev Reverts if the `tokenId` has not been minted yet.
+     */
+    function _requireMinted(uint256 tokenId) internal view virtual {
+        require(_exists(tokenId), "ERC721: invalid token ID");
     }
 }
