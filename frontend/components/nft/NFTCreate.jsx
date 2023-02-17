@@ -17,7 +17,7 @@ const NFTCreate = () => {
     const selectCollection = useRef(null)
     const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY
     const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
-    const { myCollections, myCollectionsDetails, createNFT, getMyNFTs } = useContractNFTProvider()
+    const { myCollections, myCollectionsDetails, createNFT, updateMyNFTs } = useContractNFTProvider()
 
 
     const storeNFT = async () => {
@@ -53,17 +53,19 @@ const NFTCreate = () => {
         setLoading(true)
         try {
             //call nft.storage API and stock image on ipfs
-            const metatada = await storeNFT().catch(err => {
+            const metadata = await storeNFT().catch(err => {
                 console.error(err)
                 process.exit(1)
             })
             //call SC with collection addr and uri
-            await createNFT(NFTCollectionAddr, metatada.url)
+            await createNFT(NFTCollectionAddr, metadata.url)
             toast({
                 description: "NFT créee avec succès.",
                 status: 'success',
                 isClosable: true,
             })
+            //synchronize my NFTs
+            await updateMyNFTs(metadata.url)
             //reset values
             selectCollection.current.value = null
             inputName.current.value = null
@@ -71,12 +73,10 @@ const NFTCreate = () => {
             inputImage.current.value = null
             URL.revokeObjectURL(file)
             setFile(preview)
-            //synchronize my NFTs
-            getMyNFTs()
         }
         catch (e) {
             toast({
-                description: e.error?.data?.message ?? "Une erreur inconnu s'est produite!",
+                description: e.reason ?? "Une erreur inconnu s'est produite!",
                 status: 'error',
                 isClosable: true,
             })
