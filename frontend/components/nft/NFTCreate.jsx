@@ -58,14 +58,14 @@ const NFTCreate = () => {
                 process.exit(1)
             })
             //call SC with collection addr and uri
-            await createNFT(NFTCollectionAddr, metadata.url)
+            const tokenId = await createNFT(NFTCollectionAddr, metadata.url)
             toast({
                 description: "NFT créee avec succès.",
                 status: 'success',
                 isClosable: true,
             })
             //synchronize my NFTs
-            await updateMyNFTs(metadata.url)
+            await updateMyNFTs(tokenId, NFTCollectionAddr, metadata.url)
             //reset values
             selectCollection.current.value = null
             inputName.current.value = null
