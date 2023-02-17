@@ -37,11 +37,11 @@ export const NFTMarketProvider = ({ children }) => {
     }, [isConnected, address])
 
     const listNFT = async () => {
-
+        //update price in myNFTs
     }
 
     const cancelListing = async () => {
-
+        //update price in myNFTs
     }
 
     const buyNFT = async () => {

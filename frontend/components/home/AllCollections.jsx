@@ -10,7 +10,7 @@ const AllCollections = () => {
     return (
         <Flex direction="column" alignItems="center">
             <Heading>Notable Collections</Heading>
-            <Flex direction="row" wrap="wrap" alignItems="center">
+            <Flex direction="row" wrap="wrap" alignItems="center" justifyContent="center">
                 {allCollectionsDetails && allCollectionsDetails.map((collection, index) =>
                     <Link key={index} href="#" >
                         <Card width="300" m="1rem">

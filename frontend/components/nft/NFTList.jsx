@@ -1,14 +1,14 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
-import { Card, CardHeader, CardBody, CardFooter, SimpleGrid, Heading, Button, Text, Flex } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import NFTCard from './NFTCard';
 
 const NFTList = () => {
-    const { myTokenURIs } = useContractNFTProvider()
+    const { myNFTs } = useContractNFTProvider()
 
     return (
         <Flex direction="row" wrap="wrap" alignItems="center">
-            {myTokenURIs.length > 0 &&
-                myTokenURIs.map((uri, index) => <NFTCard key={index} uri={uri} />)
+            {myNFTs.length > 0 &&
+                myNFTs.map((nft, index) => <NFTCard key={index} nft={nft} />)
             }
         </Flex>
     );

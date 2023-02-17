@@ -27,7 +27,7 @@ export const ContractNFTProvider = ({ children }) => {
     //all collections NFT with details
     const [allCollectionsDetails, setAllCollectionsDetails] = useState([])
     //my token URIs list
-    const [myTokenURIs, setMyTokenURIs] = useState([])
+    const [myNFTs, setMyNFTs] = useState([])
 
     const { address, isConnected } = useAccount()
     //get signer && provider to call SC function
@@ -51,9 +51,9 @@ export const ContractNFTProvider = ({ children }) => {
 
         return () => {
             setMyCollections([])
-            setAllCollections([])
             setMyCollectionsDetails([])
-            setMyTokenURIs([])
+            setAllCollectionsDetails([])
+            setMyNFTs([])
         }
     }, [isConnected, address])
 
@@ -97,45 +97,61 @@ export const ContractNFTProvider = ({ children }) => {
 
     //get all created collection addr
     const getNFTCollections = async () => {
-        const collections = await contractRead.connect(address).getNFTCollections()
+        const allCollectionsAddr = await contractRead.connect(address).getNFTCollections()
         //setAllCollections(collections)
         //add collection details
-        const parsedNFTCollections = await parseNFTCollections(collections)
-        setAllCollectionsDetails(parsedNFTCollections)
+        const parsedAllCollections = await parseNFTCollections(allCollectionsAddr)
+        setAllCollectionsDetails(parsedAllCollections)
         //get my NFTs depends on all collections
-        getMyNFTs(collections)
+        getMyNFTs(parsedAllCollections)
     }
 
     //create a new NFT with URI for a giver collection in param
     const createNFT = async (NFTCollectionAddr, uri) => {
         const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
         const tx = await c_NFTCollection.createNFT(uri)
-        await tx.wait()
+        const receipt = await tx.wait()
+        return receipt.events[0].args.tokenId
     }
 
     //for all collections, set my tokenIds => show my NFTs in NFTCard
-    const getMyNFTs = async (collectionsAddr) => {
-        const asyncURIs = await Promise.all(collectionsAddr.map(async (addr) => {
-            const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
+    const getMyNFTs = async (parsedAllCollections) => {
+        const asyncURIs = await Promise.all(parsedAllCollections.map(async (NFTCollection) => {
+            const c_NFTCollection = new ethers.Contract(NFTCollection.address, ContractCollection.abi, provider)
             const tokenIds = await c_NFTCollection.tokensOfOwner(address)
             //init tokenIds, avoid duplicate
-            setMyTokenURIs([])
+            setMyNFTs([])
             tokenIds.map(async (tokenId) => {
-                const uri = await c_NFTCollection.tokenURI(tokenId)
-                setMyTokenURIs(URIs => [...URIs, uri])
+                const nft = {
+                    "owner": address,
+                    "price": 0,
+                    "tokenId": tokenId,
+                    "uri": await c_NFTCollection.tokenURI(tokenId),
+                    "collection": NFTCollection
+
+                }
+                setMyNFTs(NFTs => [...NFTs, nft])
             })
         }))
     }
 
-    const updateMyNFTs = (uri) => {
-        setMyTokenURIs(URIs => [...URIs, uri])
+    const updateMyNFTs = (tokenId, NFTCollectionAddr, uri) => {
+        const index = myCollectionsDetails.findIndex(collection => collection.address == NFTCollectionAddr)
+        const nft = {
+            "owner": address,
+            "price": 0,
+            "tokenId": tokenId,
+            "uri": uri,
+            "collection": myCollectionsDetails[index]
+        }
+        setMyNFTs(NFTs => [...NFTs, nft])
     }
 
     return (
         <ContractNFTContext.Provider value={{
             contractAddress, Contract, address, isConnected,
             createNFTCollection, createNFT, updateMyNFTs,
-            myCollections, myCollectionsDetails, allCollectionsDetails, myTokenURIs
+            myCollections, myCollectionsDetails, allCollectionsDetails, myNFTs
         }}>
             {children}
         </ContractNFTContext.Provider>
