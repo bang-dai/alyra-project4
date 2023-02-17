@@ -1,12 +1,10 @@
 import Layout from '@/components/layout/Layout';
-import CreateNFT from '@/components/nft/CreateNFT';
-import { Button } from '@chakra-ui/react';
+import NFTCreate from '@/components/nft/NFTCreate';
 
-export default function Home() {
-
+export default function Create() {
     return (
         <Layout>
-            <CreateNFT />
+            <NFTCreate />
         </Layout>
     )
 }

@@ -5,7 +5,7 @@ import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import Link from 'next/link';
 
 
-const CreateNFT = () => {
+const NFTCreate = () => {
     const preview = "https://via.placeholder.com/300"
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
@@ -17,7 +17,7 @@ const CreateNFT = () => {
     const selectCollection = useRef(null)
     const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY
     const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
-    const { myCollections, myCollectionsDetails, createNFT } = useContractNFTProvider()
+    const { myCollections, myCollectionsDetails, createNFT, getMyNFTs } = useContractNFTProvider()
 
 
     const storeNFT = async () => {
@@ -52,12 +52,12 @@ const CreateNFT = () => {
 
         setLoading(true)
         try {
-            //metadata.url contain the ipfs metadata.json
+            //call nft.storage API and stock image on ipfs
             const metatada = await storeNFT().catch(err => {
                 console.error(err)
                 process.exit(1)
             })
-            //await call SC here
+            //call SC with collection addr and uri
             await createNFT(NFTCollectionAddr, metatada.url)
             toast({
                 description: "NFT créee avec succès.",
@@ -65,12 +65,14 @@ const CreateNFT = () => {
                 isClosable: true,
             })
             //reset values
+            selectCollection.current.value = null
             inputName.current.value = null
             inputDesc.current.value = null
             inputImage.current.value = null
-            selectCollection.current.value = null
             URL.revokeObjectURL(file)
             setFile(preview)
+            //synchronize my NFTs
+            getMyNFTs()
         }
         catch (e) {
             toast({
@@ -133,4 +135,4 @@ const CreateNFT = () => {
     );
 };
 
-export default CreateNFT;
+export default NFTCreate;

@@ -1,13 +1,13 @@
 import { ipfsToHTTPS } from '@/helpers/helper';
-import { Card, CardHeader, CardBody, CardFooter, SimpleGrid, Stack, Heading, Divider, ButtonGroup, Button, Image, Text } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, Divider, Button, Image, Text, Stack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react';
 
-const NFTCard = (nft) => {
+const NFTCard = ({ uri }) => {
     const [meta, setMeta] = useState()
 
     useEffect(() => {
         const fetchMetadata = async () => {
-            const metadataResponse = await fetch(ipfsToHTTPS(nft.uri));
+            const metadataResponse = await fetch(ipfsToHTTPS(uri));
             if (metadataResponse.status != 200) return;
             const json = await metadataResponse.json();
             setMeta({
@@ -20,12 +20,14 @@ const NFTCard = (nft) => {
     }, []);
 
     return (
-        <Card width="200px" height="400px" m="1rem">
+        <Card width="200px" m="1rem" height="400px">
             <CardBody p="0">
-                <Image height="250" width="100%"
+                <Image
+                    objectFit='cover'
                     src={meta?.imageURL}
                     alt={meta?.name}
                     borderRadius='lg'
+                    fallbackSrc='https://via.placeholder.com/150'
                 />
                 <Stack p='6' spacing='3'>
                     <Text>{meta?.name}</Text>

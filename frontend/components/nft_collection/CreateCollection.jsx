@@ -32,6 +32,7 @@ const CreateCollection = () => {
                 isClosable: true,
             })
             inputName.current.value = null
+            inputSymbol.current.value = null
             inputDesc.current.value = null
         }
         catch (e) {
