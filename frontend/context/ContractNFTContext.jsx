@@ -24,6 +24,8 @@ export const ContractNFTProvider = ({ children }) => {
     const [allCollections, setAllCollections] = useState([])
     //my collections NFT with details
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
+    //all collections NFT with details
+    const [allCollectionsDetails, setAllCollectionsDetails] = useState([])
     //my token URIs list
     const [myTokenURIs, setMyTokenURIs] = useState([])
 
@@ -40,7 +42,6 @@ export const ContractNFTProvider = ({ children }) => {
     const contract = new ethers.Contract(contractAddress, Contract.abi, signer)
     //read contract
     const contractRead = new ethers.Contract(contractAddress, Contract.abi, provider)
-
 
 
     useEffect(() => {
@@ -64,14 +65,14 @@ export const ContractNFTProvider = ({ children }) => {
     }
 
     //create new collection. attention: signer is not the msg.sender, that's why I use address in param
-    const deploy = async (name, symbol, desc) => {
+    const createNFTCollection = async (name, symbol, desc) => {
         const tx = await contract.deploy(name, symbol, desc, address, marketplaceAddr)
         await tx.wait()
         await updateCollections()
     }
 
-    //get detail about collections
-    const getDetail = async (collections) => {
+    //parse and get detail about collections
+    const parseNFTCollections = async (collections) => {
         const asyncCollections = await Promise.all(collections.map(async (addr) => {
             const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
             return {
@@ -82,7 +83,7 @@ export const ContractNFTProvider = ({ children }) => {
             }
         }))
 
-        setMyCollectionsDetails(asyncCollections)
+        return asyncCollections
     }
 
     //get my created collection addr
@@ -90,13 +91,17 @@ export const ContractNFTProvider = ({ children }) => {
         const collections = await contractRead.connect(address).getMyCollections()
         setMyCollections(collections)
         //add collection details
-        getDetail(collections)
+        const parsedNFTCollections = await parseNFTCollections(collections)
+        setMyCollectionsDetails(parsedNFTCollections)
     }
 
     //get all created collection addr
     const getNFTCollections = async () => {
         const collections = await contractRead.connect(address).getNFTCollections()
-        setAllCollections(collections)
+        //setAllCollections(collections)
+        //add collection details
+        const parsedNFTCollections = await parseNFTCollections(collections)
+        setAllCollectionsDetails(parsedNFTCollections)
         //get my NFTs depends on all collections
         getMyNFTs(collections)
     }
@@ -106,7 +111,6 @@ export const ContractNFTProvider = ({ children }) => {
         const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
         const tx = await c_NFTCollection.createNFT(uri)
         await tx.wait()
-
     }
 
     //for all collections, set my tokenIds => show my NFTs in NFTCard
@@ -128,7 +132,11 @@ export const ContractNFTProvider = ({ children }) => {
     }
 
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myTokenURIs, updateMyNFTs }}>
+        <ContractNFTContext.Provider value={{
+            contractAddress, Contract, address, isConnected,
+            createNFTCollection, createNFT, updateMyNFTs,
+            myCollections, myCollectionsDetails, allCollectionsDetails, myTokenURIs
+        }}>
             {children}
         </ContractNFTContext.Provider>
     )

@@ -8,7 +8,7 @@ const CreateCollection = () => {
     const inputDesc = useRef(null)
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
-    const { deploy, myCollectionsDetails } = useContractNFTProvider()
+    const { createNFTCollection, myCollectionsDetails } = useContractNFTProvider()
 
     const handleCreate = async () => {
         const name = inputName.current.value
@@ -25,7 +25,7 @@ const CreateCollection = () => {
 
         setLoading(true)
         try {
-            await deploy(name, symbol, desc)
+            await createNFTCollection(name, symbol, desc)
             toast({
                 description: "Collection NFT créee avec succès.",
                 status: 'success',
