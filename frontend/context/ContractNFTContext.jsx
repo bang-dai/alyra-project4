@@ -38,7 +38,6 @@ export const ContractNFTProvider = ({ children }) => {
     })
     //write contract
     const contract = new ethers.Contract(contractAddress, Contract.abi, signer)
-
     //read contract
     const contractRead = new ethers.Contract(contractAddress, Contract.abi, provider)
 
@@ -98,7 +97,7 @@ export const ContractNFTProvider = ({ children }) => {
     const getNFTCollections = async () => {
         const collections = await contractRead.connect(address).getNFTCollections()
         setAllCollections(collections)
-        //
+        //get my NFTs depends on all collections
         getMyNFTs(collections)
     }
 
@@ -111,7 +110,7 @@ export const ContractNFTProvider = ({ children }) => {
     }
 
     //for all collections, set my tokenIds => show my NFTs in NFTCard
-    const getMyNFTs = async (collectionsAddr = allCollections) => {
+    const getMyNFTs = async (collectionsAddr) => {
         const asyncURIs = await Promise.all(collectionsAddr.map(async (addr) => {
             const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
             const tokenIds = await c_NFTCollection.tokensOfOwner(address)
@@ -119,13 +118,17 @@ export const ContractNFTProvider = ({ children }) => {
             setMyTokenURIs([])
             tokenIds.map(async (tokenId) => {
                 const uri = await c_NFTCollection.tokenURI(tokenId)
-                setMyTokenURIs(URI => [...URI, uri])
+                setMyTokenURIs(URIs => [...URIs, uri])
             })
         }))
     }
 
+    const updateMyNFTs = (uri) => {
+        setMyTokenURIs(URIs => [...URIs, uri])
+    }
+
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myTokenURIs, getMyNFTs }}>
+        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myTokenURIs, updateMyNFTs }}>
             {children}
         </ContractNFTContext.Provider>
     )

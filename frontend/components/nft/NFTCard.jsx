@@ -27,7 +27,7 @@ const NFTCard = ({ uri }) => {
                     src={meta?.imageURL}
                     alt={meta?.name}
                     borderRadius='lg'
-                    fallbackSrc='https://via.placeholder.com/150'
+                    fallbackSrc='https://via.placeholder.com/200'
                 />
                 <Stack p='6' spacing='3'>
                     <Text>{meta?.name}</Text>
