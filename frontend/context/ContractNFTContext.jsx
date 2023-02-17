@@ -18,10 +18,14 @@ export function useContractNFTProvider() {
 export const ContractNFTProvider = ({ children }) => {
     const contractAddress = process.env.NEXT_PUBLIC_FACTORY_ADDR
     const marketplaceAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDR
+    //addresses of my collections NFT
     const [myCollections, setMyCollections] = useState([])
+    //addresses of all collections NFT
     const [allCollections, setAllCollections] = useState([])
-    const [myURIs, setMyURIs] = useState([])
+    //my collections NFT with details
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
+    //my token URIs list
+    const [myTokenURIs, setMyTokenURIs] = useState([])
 
     const { address, isConnected } = useAccount()
     //get signer && provider to call SC function
@@ -49,6 +53,7 @@ export const ContractNFTProvider = ({ children }) => {
             setMyCollections([])
             setAllCollections([])
             setMyCollectionsDetails([])
+            setMyTokenURIs([])
         }
     }, [isConnected, address])
 
@@ -85,6 +90,7 @@ export const ContractNFTProvider = ({ children }) => {
     const getMyCollections = async () => {
         const collections = await contractRead.connect(address).getMyCollections()
         setMyCollections(collections)
+        //add collection details
         getDetail(collections)
     }
 
@@ -92,6 +98,7 @@ export const ContractNFTProvider = ({ children }) => {
     const getNFTCollections = async () => {
         const collections = await contractRead.connect(address).getNFTCollections()
         setAllCollections(collections)
+        //
         getMyNFTs(collections)
     }
 
@@ -100,21 +107,25 @@ export const ContractNFTProvider = ({ children }) => {
         const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
         const tx = await c_NFTCollection.createNFT(uri)
         await tx.wait()
+
     }
 
-    const getMyNFTs = async (allCollections) => {
-        const asyncURIs = await Promise.all(allCollections.map(async (addr) => {
+    //for all collections, set my tokenIds => show my NFTs in NFTCard
+    const getMyNFTs = async (collectionsAddr = allCollections) => {
+        const asyncURIs = await Promise.all(collectionsAddr.map(async (addr) => {
             const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
             const tokenIds = await c_NFTCollection.tokensOfOwner(address)
+            //init tokenIds, avoid duplicate
+            setMyTokenURIs([])
             tokenIds.map(async (tokenId) => {
                 const uri = await c_NFTCollection.tokenURI(tokenId)
-                setMyURIs(URI => [...URI, uri])
+                setMyTokenURIs(URI => [...URI, uri])
             })
         }))
     }
 
     return (
-        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myURIs }}>
+        <ContractNFTContext.Provider value={{ contractAddress, Contract, address, isConnected, deploy, myCollections, myCollectionsDetails, createNFT, myTokenURIs, getMyNFTs }}>
             {children}
         </ContractNFTContext.Provider>
     )

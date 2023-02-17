@@ -2,7 +2,7 @@ import { Card, CardHeader, CardBody, CardFooter, SimpleGrid, Heading, Button, Te
 import Layout from '@/components/layout/Layout';
 import NFTList from '@/components/nft/NFTList';
 
-export default function Collection() {
+export default function MyNFTs() {
     return (
         <Layout>
             <NFTList />
