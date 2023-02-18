@@ -11,6 +11,7 @@ import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { ChakraProvider } from '@chakra-ui/react'
 import { ContractNFTProvider } from '@/context/ContractNFTContext';
+import { NFTMarketProvider } from '@/context/NFTMarketContext';
 
 const { chains, provider } = configureChains(
   [goerli, hardhat],
@@ -35,7 +36,9 @@ export default function App({ Component, pageProps }) {
       <WagmiConfig client={wagmiClient}>
         <RainbowKitProvider chains={chains}>
           <ContractNFTProvider>
-            <Component {...pageProps} />
+            <NFTMarketProvider>
+              <Component {...pageProps} />
+            </NFTMarketProvider>
           </ContractNFTProvider>
         </RainbowKitProvider>
       </WagmiConfig>

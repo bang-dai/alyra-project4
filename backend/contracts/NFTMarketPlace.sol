@@ -111,4 +111,12 @@ contract NFTMarketPlace is Ownable {
         ERC721A(_nftCollection).safeTransferFrom(msg.sender, _to, _tokenId);
         _clearListing(_tokenId, _nftCollection);
     }
+
+    function getListings(address _collectionAddr, uint256 _tokenId)
+        external
+        view
+        returns (NFTListing memory)
+    {
+        return _listings[_collectionAddr][_tokenId];
+    }
 }

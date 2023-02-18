@@ -36,12 +36,15 @@ export const NFTMarketProvider = ({ children }) => {
         }
     }, [isConnected, address])
 
-    const listNFT = async () => {
-        //update price in myNFTs
+    const listNFT = async (tokenId, priceWei, nftCollection) => {
+        //update price in myNFTs        
+        const tx = await contract.listNFT(tokenId, priceWei, nftCollection)
+        await tx.wait()
     }
 
-    const cancelListing = async () => {
-        //update price in myNFTs
+    const cancelListing = async (tokenId, nftCollection) => {
+        const tx = await contract.cancelListing(tokenId, nftCollection)
+        await tx.wait()
     }
 
     const buyNFT = async () => {
@@ -51,7 +54,7 @@ export const NFTMarketProvider = ({ children }) => {
 
 
     return (
-        <NFTMarketContext.Provider value={{}}>
+        <NFTMarketContext.Provider value={{ listNFT, cancelListing }}>
             {children}
         </NFTMarketContext.Provider>
     )

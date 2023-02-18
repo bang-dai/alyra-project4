@@ -1,5 +1,5 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
-import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider } from '@chakra-ui/react';
+import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider, Badge } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 
 const CreateCollection = () => {
@@ -80,6 +80,7 @@ const CreateCollection = () => {
                     <Card key={index}>
                         <CardHeader>
                             <Heading size='md'>{collection.name}</Heading>
+                            <Badge variant='outline' colorScheme='green'>{collection.symbol}</Badge>
                         </CardHeader>
                         <CardBody>
                             <Text>{collection.description}</Text>

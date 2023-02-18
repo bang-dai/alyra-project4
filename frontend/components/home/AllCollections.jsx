@@ -1,10 +1,8 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider, Center } from '@chakra-ui/react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
 
 const AllCollections = () => {
-
     const { allCollectionsDetails } = useContractNFTProvider()
 
     return (

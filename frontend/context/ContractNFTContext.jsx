@@ -38,9 +38,9 @@ export const ContractNFTProvider = ({ children }) => {
         address: address,
         watch: true
     })
-    //write contract
+    //write contract, pas besoin de connect
     const contract = new ethers.Contract(contractAddress, Contract.abi, signer)
-    //read contract
+    //read contract, il faut absolement le .connect
     const contractRead = new ethers.Contract(contractAddress, Contract.abi, provider)
 
 
@@ -118,15 +118,15 @@ export const ContractNFTProvider = ({ children }) => {
     const getMyNFTs = async (parsedAllCollections) => {
         const asyncURIs = await Promise.all(parsedAllCollections.map(async (NFTCollection) => {
             const c_NFTCollection = new ethers.Contract(NFTCollection.address, ContractCollection.abi, provider)
-            const tokenIds = await c_NFTCollection.tokensOfOwner(address)
+            const tokenIds = await c_NFTCollection.connect(address).tokensOfOwner(address)
             //init tokenIds, avoid duplicate
             setMyNFTs([])
             tokenIds.map(async (tokenId) => {
                 const nft = {
                     "owner": address,
-                    "price": 0,
+                    "price": ethers.BigNumber.from("0"),
                     "tokenId": tokenId,
-                    "uri": await c_NFTCollection.tokenURI(tokenId),
+                    "uri": await c_NFTCollection.connect(address).tokenURI(tokenId),
                     "collection": NFTCollection
 
                 }
@@ -139,7 +139,7 @@ export const ContractNFTProvider = ({ children }) => {
         const index = myCollectionsDetails.findIndex(collection => collection.address == NFTCollectionAddr)
         const nft = {
             "owner": address,
-            "price": 0,
+            "price": ethers.BigNumber.from("0"),
             "tokenId": tokenId,
             "uri": uri,
             "collection": myCollectionsDetails[index]
