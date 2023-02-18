@@ -21,7 +21,7 @@ const NFTCard = ({ nft }) => {
     const { listNFT, cancelListing } = useNFTMarketProvider()
     const [meta, setMeta] = useState()
     const [isLoading, setLoading] = useState(false)
-    const [cancelText, setCancelText] = useState("Annuler")
+    const [cancelText, setCancelText] = useState(ethers.utils.formatEther(nft.price) + " ETH")
     const { address, isConnected } = useAccount()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const inputPrice = useRef(null)
