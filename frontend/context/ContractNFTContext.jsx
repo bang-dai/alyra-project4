@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import Contract from '../../backend/artifacts/contracts/NFTCollectionFactory.sol/NFTCollectionFactory.json' //update here
 import ContractCollection from '../../backend/artifacts/contracts/NFTCollection.sol/NFTCollection.json' //update here
 import { useAccount, useBalance, useProvider, useSigner } from "wagmi";
+import { useNFTMarketProvider } from "./NFTMarketContext";
 
 const ContractNFTContext = React.createContext(null)
 
@@ -18,10 +19,11 @@ export function useContractNFTProvider() {
 export const ContractNFTProvider = ({ children }) => {
     const contractAddress = process.env.NEXT_PUBLIC_FACTORY_ADDR
     const marketplaceAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDR
+    const { getPrice } = useNFTMarketProvider()
     //addresses of my collections NFT
     const [myCollections, setMyCollections] = useState([])
     //addresses of all collections NFT
-    const [allCollections, setAllCollections] = useState([])
+    //const [allCollections, setAllCollections] = useState([])
     //my collections NFT with details
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
     //all collections NFT with details
@@ -58,32 +60,25 @@ export const ContractNFTProvider = ({ children }) => {
     }, [isConnected, address])
 
 
-    //update all collections addr
-    const updateCollections = async () => {
-        await getMyCollections()
-        await getNFTCollections()
-    }
-
-    //create new collection. attention: signer is not the msg.sender, that's why I use address in param
+    //1) create new collection. attention: signer is not the msg.sender, that's why I use address in param
     const createNFTCollection = async (name, symbol, desc) => {
         const tx = await contract.deploy(name, symbol, desc, address, marketplaceAddr)
         await tx.wait()
         await updateCollections()
     }
 
-    //parse and get detail about collections
-    const parseNFTCollections = async (collections) => {
-        const asyncCollections = await Promise.all(collections.map(async (addr) => {
-            const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
-            return {
-                "name": await c_NFTCollection.connect(address).name(),
-                "symbol": await c_NFTCollection.connect(address).symbol(),
-                "description": await c_NFTCollection.connect(address).getDescription(),
-                "address": addr
-            }
-        }))
+    //2) create a new NFT with URI and collectionAddr in param
+    const createNFT = async (NFTCollectionAddr, uri) => {
+        const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
+        const tx = await c_NFTCollection.createNFT(uri)
+        const receipt = await tx.wait()
+        return receipt.events[0].args.tokenId
+    }
 
-        return asyncCollections
+    //update all collections only after init page
+    const updateCollections = async () => {
+        await getMyCollections()
+        await getNFTCollections()
     }
 
     //get my created collection addr
@@ -106,13 +101,21 @@ export const ContractNFTProvider = ({ children }) => {
         getMyNFTs(parsedAllCollections)
     }
 
-    //create a new NFT with URI for a giver collection in param
-    const createNFT = async (NFTCollectionAddr, uri) => {
-        const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, signer)
-        const tx = await c_NFTCollection.createNFT(uri)
-        const receipt = await tx.wait()
-        return receipt.events[0].args.tokenId
+    //parse and get detail about collections
+    const parseNFTCollections = async (collections) => {
+        const asyncCollections = await Promise.all(collections.map(async (addr) => {
+            const c_NFTCollection = new ethers.Contract(addr, ContractCollection.abi, provider)
+            return {
+                "name": await c_NFTCollection.connect(address).name(),
+                "symbol": await c_NFTCollection.connect(address).symbol(),
+                "description": await c_NFTCollection.connect(address).getDescription(),
+                "address": addr,
+            }
+        }))
+
+        return asyncCollections
     }
+
 
     //for all collections, set my tokenIds => show my NFTs in NFTCard
     const getMyNFTs = async (parsedAllCollections) => {
@@ -124,7 +127,7 @@ export const ContractNFTProvider = ({ children }) => {
             tokenIds.map(async (tokenId) => {
                 const nft = {
                     "owner": address,
-                    "price": ethers.BigNumber.from("0"),
+                    "price": await getPrice(NFTCollection.address, tokenId),
                     "tokenId": tokenId,
                     "uri": await c_NFTCollection.connect(address).tokenURI(tokenId),
                     "collection": NFTCollection
@@ -135,17 +138,20 @@ export const ContractNFTProvider = ({ children }) => {
         }))
     }
 
-    const updateMyNFTs = (tokenId, NFTCollectionAddr, uri) => {
+    //update my NFT after creation
+    const updateMyNFTs = async (tokenId, NFTCollectionAddr, uri) => {
         const index = myCollectionsDetails.findIndex(collection => collection.address == NFTCollectionAddr)
         const nft = {
             "owner": address,
-            "price": ethers.BigNumber.from("0"),
+            "price": await getPrice(NFTCollectionAddr, tokenId),
             "tokenId": tokenId,
             "uri": uri,
             "collection": myCollectionsDetails[index]
         }
         setMyNFTs(NFTs => [...NFTs, nft])
     }
+
+
 
     return (
         <ContractNFTContext.Provider value={{

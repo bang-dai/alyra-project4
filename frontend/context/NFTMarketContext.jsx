@@ -51,10 +51,15 @@ export const NFTMarketProvider = ({ children }) => {
 
     }
 
+    const getPrice = async (collectionAddr, tokenId) => {
+        const listing = await contractRead.connect(address).getListings(collectionAddr, tokenId)
+        return listing.price //BigNumber
+    }
+
 
 
     return (
-        <NFTMarketContext.Provider value={{ listNFT, cancelListing }}>
+        <NFTMarketContext.Provider value={{ listNFT, cancelListing, getPrice }}>
             {children}
         </NFTMarketContext.Provider>
     )
