@@ -3,15 +3,16 @@ import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
+import Search from './Search';
 
 const Header = ({ showSidebarButton = true, onShowSidebar }) => {
     const { colorMode, toggleColorMode } = useColorMode()
 
     return (
-        <Flex minH="10vh" alignItems={'center'} justifyContent="space-between"
-            borderBottomWidth="1px" borderBottomColor={'gray.700'}>
-            <Flex>
+        <Flex minH="10vh" alignItems={'center'} justifyContent="space-between" borderBottomWidth="1px" borderBottomColor={'gray.700'}>
+            <Flex direction="row">
                 <Link href="/"><Image src="/h2o.jpg" width="100" height="100" alt='logo of H2O marketplace' /></Link>
+                <Search />
             </Flex>
             <Flex justifyContent="space-around">
                 <Link href="/"><Button m="1rem">Home</Button></Link>
