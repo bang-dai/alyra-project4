@@ -29,12 +29,12 @@ const { developmentChains } = require("../../helper-hardhat-config")
         })
 
         describe("Create new collection", function () {
-            it("Should revert because empty name collection", async function () {
+            it("Should revert because empty name and symbol collection", async function () {
                 const tx = NFTCollectionFactory.deploy("", "", "", user1.address, NFTMarketPlaceAddr)
                 await expect(tx).to.be.revertedWith("Name couldn't be empty!");
             })
 
-            it("Should create collection with name and symbol", async function () {
+            it("Should create collection with correct name and symbol", async function () {
                 const name = "coolcat"
                 const symbol = "cc"
                 const desc = "simple description for collection"
@@ -52,7 +52,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 NFTCollection = await ethers.getContractAt("NFTCollection", NFTCollectionAddr, deployer)
             })
 
-            it("Should collection get the right description", async function () {
+            it("Should get the description from collection", async function () {
                 const desc = "simple description for collection"
                 const expectDesc = await NFTCollection.getDescription()
                 assert.equal(expectDesc, desc)
@@ -85,7 +85,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(tx).to.be.revertedWith("You are not the owner of the token.");
             })
 
-            it("should list correctly and transfert NFT to MarketPlace", async function () {
+            it("should list correctly on MarketPlace", async function () {
                 const tokenId = await createNFT(3)
                 const tx = await NFTMarketPlace.connect(user1).listNFT(tokenId, 10, NFTCollectionAddr)
                 await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
@@ -110,7 +110,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(transaction).to.be.revertedWith("Your price is incorrect!");
             })
 
-            it("Should transfert NFT to buyer and the money to seller", async function () {
+            it("Should transfert NFT to buyer, the money to seller and marketplace earn 2%", async function () {
                 const price = "10"; //10eth
                 const priceWei = ethers.utils.parseEther(price)
                 const contractBalance = await NFTMarketPlace.provider.getBalance(NFTMarketPlaceAddr)
@@ -145,7 +145,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 assert.equal(ownerAddr, user2.address)
             })
 
-            it("Should revert if seller is the buyer", async function () {
+            it("Should revert if buyer attempt to buy his NFT", async function () {
                 const price = "10"; //10eth
                 const priceWei = ethers.utils.parseEther(price)
                 const tokenId = await createNFT(6)

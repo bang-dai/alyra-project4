@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 //attention: import le fichier car modification des visibilités _name et _symbol
 import "./ERC721URIStorage.sol";
-import "./ERC721AQueryable.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
