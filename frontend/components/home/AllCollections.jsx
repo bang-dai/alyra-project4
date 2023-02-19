@@ -1,7 +1,5 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
-import { ipfsToHTTPS } from '@/helpers/helper';
-import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider, Center } from '@chakra-ui/react';
-import Link from 'next/link';
+import { Heading, Flex } from '@chakra-ui/react';
 import CollectionCard from './CollectionCard';
 
 const AllCollections = () => {

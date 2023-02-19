@@ -1,6 +1,5 @@
 import ListCollection from '@/components/home/ListCollection';
 import Layout from '@/components/layout/Layout';
-
 import { useRouter } from 'next/router'
 
 const Collection = () => {
