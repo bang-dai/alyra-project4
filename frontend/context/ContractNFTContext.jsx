@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ethers } from "ethers";
-import Contract from '../contract/NFTCollectionFactory.json' //update here
-import ContractCollection from '../contract/NFTCollection.json' //update here
+import Contract from '../../backend/artifacts/contracts/NFTCollectionFactory.sol/NFTCollectionFactory.json' //update here
+import ContractCollection from '../../backend/artifacts/contracts/NFTCollection.sol/NFTCollection.json' //update here
 import { useAccount, useBalance, useProvider, useSigner } from "wagmi";
 import { useNFTMarketProvider } from "./NFTMarketContext";
 

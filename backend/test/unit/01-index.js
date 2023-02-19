@@ -7,6 +7,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
     : describe("NFT MarketPlace Test", function () {
         let deployer, user1, user2, NFTMarketPlace, NFTMarketPlaceAddr, NFTCollectionFactory, NFTCollection, NFTCollectionAddr
         const baseURI = "https://uri.com/"
+        const imageURL = "https://uri.com/image.png"
 
         const createNFT = async (expectedTokenId) => {
             const tx = await NFTCollection.connect(user1).createNFT(baseURI)
@@ -30,7 +31,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
         describe("Create new collection", function () {
             it("Should revert because empty name and symbol collection", async function () {
-                const tx = NFTCollectionFactory.deploy("", "", "", user1.address, NFTMarketPlaceAddr)
+                const tx = NFTCollectionFactory.deploy("", "", "", imageURL, user1.address, NFTMarketPlaceAddr)
                 await expect(tx).to.be.revertedWith("Name couldn't be empty!");
             })
 
@@ -38,7 +39,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const name = "coolcat"
                 const symbol = "cc"
                 const desc = "simple description for collection"
-                const tx = await NFTCollectionFactory.deploy(name, symbol, desc, user1.address, NFTMarketPlaceAddr)
+                const tx = await NFTCollectionFactory.deploy(name, symbol, desc, imageURL, user1.address, NFTMarketPlaceAddr)
                 await expect(tx).to.emit(NFTCollectionFactory, "NFTCollectionCreated").withArgs(name, symbol)
                 const receipt = await tx.wait()
 
@@ -56,6 +57,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const desc = "simple description for collection"
                 const expectDesc = await NFTCollection.getDescription()
                 assert.equal(expectDesc, desc)
+            })
+
+            it("Should get the imageURL from collection", async function () {
+                const expectImageURL = await NFTCollection.getImageURL()
+                assert.equal(expectImageURL, imageURL)
             })
 
             it("Should get my collection address", async function () {
@@ -202,7 +208,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(tx).to.be.revertedWith("Ownable: caller is not the owner");
             })
 
-            it("Should withdraw correctly to owner", async function () {
+            it("Should withdraw eth to owner", async function () {
                 const deployerBalance = await deployer.getBalance()
                 const tx = await NFTMarketPlace.withdraw()
                 await tx.wait()

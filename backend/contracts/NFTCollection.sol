@@ -10,9 +10,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract NFTCollection is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
-    address private _marketplaceContract;
-    //name of NFT is in metadata
-    string description;
+    address private marketplaceContract;
+    //description of collection
+    string private description;
+    //image URL of collection
+    string private imageURL;
 
     event NFTCreated(uint256 tokenId, string uri);
 
@@ -20,21 +22,23 @@ contract NFTCollection is ERC721URIStorage, Ownable {
 
     /**
      * @notice initialize the NFT collection name and symbol
-     * @dev This function is called by the factory
+     * @dev This function is called by the factory and only for owner
      * @param name the collection's name
      * @param symbol the collection's symbol
      */
     function init(
         string calldata name,
         string calldata symbol,
-        string calldata desc,
+        string calldata _desc,
+        string calldata _imageURL,
         address sender,
         address marketPlace
     ) external onlyOwner {
         _name = name;
         _symbol = symbol;
-        description = desc;
-        _marketplaceContract = marketPlace;
+        description = _desc;
+        imageURL = _imageURL;
+        marketplaceContract = marketPlace;
         transferOwnership(sender);
     }
 
@@ -43,22 +47,37 @@ contract NFTCollection is ERC721URIStorage, Ownable {
      * @dev This function is called by only owner
      * @param _uri only uri need, because metadata contains name, description and image ipfs
      */
-    function createNFT(string memory _uri) public onlyOwner returns (uint256) {
+    function createNFT(string memory _uri) external onlyOwner {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, 1);
         _setTokenURI(tokenId, _uri);
         //give permission for marketplace to trade our NFT
-        setApprovalForAll(_marketplaceContract, true);
+        setApprovalForAll(marketplaceContract, true);
         emit NFTCreated(tokenId, _uri);
-
-        return tokenId;
     }
 
+    /**
+     * @notice get description of collection
+     * @return string description
+     */
     function getDescription() external view returns (string memory) {
         return description;
     }
 
+    /**
+     * @notice get imageURL of collection
+     * @return string imageURL
+     */
+    function getImageURL() external view returns (string memory) {
+        return imageURL;
+    }
+
+    /**
+     * @notice get tokenIds of the owner
+     * @param owner the owner address
+     * @return array of tokenIds of the owner
+     */
     function tokensOfOwner(address owner)
         external
         view
