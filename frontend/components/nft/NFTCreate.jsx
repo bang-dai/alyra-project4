@@ -1,6 +1,6 @@
 import { Input, Select, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, Alert, AlertIcon } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
-import { NFTStorage } from 'nft.storage'
+import { storeNFT } from '@/helpers/helper';
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import Link from 'next/link';
 
@@ -15,23 +15,11 @@ const NFTCreate = () => {
     const inputDesc = useRef(null)
     const inputImage = useRef(null)
     const selectCollection = useRef(null)
-    const NFT_STORAGE_KEY = process.env.NEXT_PUBLIC_NFT_STORAGE_KEY
-    const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
     const { myCollections, myCollectionsDetails, createNFT, updateMyNFTs } = useContractNFTProvider()
 
 
-    const storeNFT = async () => {
-        const metadata = await nftstorage.store({
-            image: image,
-            name: inputName.current.value.trim(),
-            description: inputDesc.current.value.trim(),
-        })
-
-        return metadata
-    }
-
     const handleCreate = async () => {
-        const name = inputName.current.value
+        const name = inputName.current.value.trim()
         const NFTCollectionAddr = selectCollection.current.value
         if (NFTCollectionAddr == null || NFTCollectionAddr.trim().length == 0) {
             toast({
@@ -41,7 +29,7 @@ const NFTCreate = () => {
             })
             return
         }
-        if (name == null || name.trim().length == 0 || file == preview) {
+        if (name == null || name.length == 0 || file == preview) {
             toast({
                 description: "Le nom et l'image du NFT sont obligatoire!",
                 status: 'error',
@@ -53,10 +41,7 @@ const NFTCreate = () => {
         setLoading(true)
         try {
             //call nft.storage API and stock image on ipfs
-            const metadata = await storeNFT().catch(err => {
-                console.error(err)
-                process.exit(1)
-            })
+            const metadata = await storeNFT(image, name, inputDesc.current.value.trim())
             //call SC with collection addr and uri
             const tokenId = await createNFT(NFTCollectionAddr, metadata.url)
             toast({

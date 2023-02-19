@@ -61,8 +61,8 @@ export const ContractNFTProvider = ({ children }) => {
 
 
     //1) create new collection. attention: signer is not the msg.sender, that's why I use address in param
-    const createNFTCollection = async (name, symbol, desc) => {
-        const tx = await contract.deploy(name, symbol, desc, address, marketplaceAddr)
+    const createNFTCollection = async (name, symbol, desc, imageURL) => {
+        const tx = await contract.deploy(name, symbol, desc, imageURL, address, marketplaceAddr)
         await tx.wait()
         await updateCollections()
     }
@@ -109,6 +109,7 @@ export const ContractNFTProvider = ({ children }) => {
                 "name": await c_NFTCollection.connect(address).name(),
                 "symbol": await c_NFTCollection.connect(address).symbol(),
                 "description": await c_NFTCollection.connect(address).getDescription(),
+                "image": await c_NFTCollection.connect(address).getImageURL(),
                 "address": addr,
             }
         }))
@@ -140,13 +141,13 @@ export const ContractNFTProvider = ({ children }) => {
 
     //update my NFT after creation
     const updateMyNFTs = async (tokenId, NFTCollectionAddr, uri) => {
-        const index = myCollectionsDetails.findIndex(collection => collection.address == NFTCollectionAddr)
+        const collectionDetail = myCollectionsDetails.find(collection => collection.address == NFTCollectionAddr)
         const nft = {
             "owner": address,
             "price": await getPrice(NFTCollectionAddr, tokenId),
             "tokenId": tokenId,
             "uri": uri,
-            "collection": myCollectionsDetails[index]
+            "collection": collectionDetail
         }
         setMyNFTs(NFTs => [...NFTs, nft])
     }

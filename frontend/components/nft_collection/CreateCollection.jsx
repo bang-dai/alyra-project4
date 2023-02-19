@@ -1,22 +1,27 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider, Badge } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
+import { storeNFT } from '@/helpers/helper';
 
 const CreateCollection = () => {
+    const preview = "https://via.placeholder.com/300"
     const inputName = useRef(null)
     const inputSymbol = useRef(null)
     const inputDesc = useRef(null)
+    const inputImage = useRef(null)
     const toast = useToast()
     const [isLoading, setLoading] = useState(false)
+    const [file, setFile] = useState(preview)
+    const [image, setImage] = useState(null)
     const { createNFTCollection, myCollectionsDetails } = useContractNFTProvider()
 
     const handleCreate = async () => {
         const name = inputName.current.value
         const symbol = inputSymbol.current.value
         const desc = inputDesc.current.value
-        if (name == null || name.trim().length == 0 || symbol == null || symbol.trim().length == 0) {
+        if (name == null || name.trim().length == 0 || symbol == null || symbol.trim().length == 0 || file == preview) {
             toast({
-                description: "Le nom et le symbol sont obligatoire!",
+                description: "Le nom, le symbol et l'image sont obligatoire!",
                 status: 'error',
                 isClosable: true,
             })
@@ -25,7 +30,10 @@ const CreateCollection = () => {
 
         setLoading(true)
         try {
-            await createNFTCollection(name, symbol, desc)
+            const metadata = await storeNFT(image, name, desc)
+            const imageURL = metadata.data.image.href
+
+            await createNFTCollection(name, symbol, desc, imageURL)
             toast({
                 description: "Collection NFT créee avec succès.",
                 status: 'success',
@@ -34,6 +42,9 @@ const CreateCollection = () => {
             inputName.current.value = null
             inputSymbol.current.value = null
             inputDesc.current.value = null
+            inputImage.current.value = null
+            URL.revokeObjectURL(file)
+            setFile(preview)
         }
         catch (e) {
             toast({
@@ -46,6 +57,11 @@ const CreateCollection = () => {
         setLoading(false)
     }
 
+    const handleChange = (e) => {
+        setFile(URL.createObjectURL(e.target.files[0]))
+        setImage(e.target.files[0])
+    }
+
     return (
         <Flex direction="column">
             <Card
@@ -56,7 +72,7 @@ const CreateCollection = () => {
                 <Image
                     objectFit='cover'
                     maxW={{ base: '100%', sm: '300px' }}
-                    src='https://picsum.photos/id/20/300/300'
+                    src={file}
                     alt='créer une collection de NFT'
                 />
 
@@ -66,6 +82,7 @@ const CreateCollection = () => {
                         <Input placeholder='Nom*: Bored Ape Yacht Club' ref={inputName} />
                         <Input placeholder='Symbol*: BAYC' ref={inputSymbol} />
                         <Textarea placeholder='Description' ref={inputDesc} />
+                        <Input placeholder='Image* de la collection' type="file" onChange={handleChange} ref={inputImage} />
                     </CardBody>
                     <CardFooter>
                         <Button variant='solid' colorScheme='blue' onClick={handleCreate} isLoading={isLoading}>
