@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ethers } from "ethers";
-import Contract from '../../backend/artifacts/contracts/NFTMarketPlace.sol/NFTMarketPlace.json' //update here
+import Contract from '../contract/NFTMarketPlace.json' //update here
 import { useAccount, useBalance, useProvider, useSigner } from "wagmi";
 
 const NFTMarketContext = React.createContext(null)
