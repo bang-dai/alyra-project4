@@ -38,13 +38,7 @@ export const NFTMarketProvider = ({ children }) => {
     //1) List my NFTs
     const listNFT = async (tokenId, nftCollection, priceWei) => {
         //need approve before listing
-        const c_NFTCollection = new ethers.Contract(nftCollection, ContractCollection.abi, signer)
-        const isApproved = await c_NFTCollection.isApprovedForAll(address, marketplaceAddr)
-        if (!isApproved) {
-            const approve = await c_NFTCollection.setApprovalForAll(marketplaceAddr, true)
-            await approve.wait()
-        }
-
+        await approve(nftCollection)
         const tx = await contract.listNFT(tokenId, priceWei, nftCollection)
         await tx.wait()
     }
@@ -61,6 +55,23 @@ export const NFTMarketProvider = ({ children }) => {
         await transaction.wait()
     }
 
+    //4) Transfer NFT
+    const transferNFT = async (tokenId, nftCollection, to) => {
+        await approve(nftCollection)
+        const tx = await contract.tranfert(tokenId, nftCollection, to)
+        await tx.wait()
+    }
+
+    //approve the operator
+    const approve = async (nftCollection) => {
+        const c_NFTCollection = new ethers.Contract(nftCollection, ContractCollection.abi, signer)
+        const isApproved = await c_NFTCollection.isApprovedForAll(address, marketplaceAddr)
+        if (!isApproved) {
+            const approve = await c_NFTCollection.setApprovalForAll(marketplaceAddr, true)
+            await approve.wait()
+        }
+    }
+
     //Get listing price of a NFT
     const getPrice = async (tokenId, collectionAddr) => {
         const listing = await contractRead.connect(address).getListings(collectionAddr, tokenId)
@@ -68,7 +79,7 @@ export const NFTMarketProvider = ({ children }) => {
     }
 
     return (
-        <NFTMarketContext.Provider value={{ listNFT, cancelListing, getPrice, buyNFT }}>
+        <NFTMarketContext.Provider value={{ listNFT, cancelListing, getPrice, buyNFT, transferNFT }}>
             {children}
         </NFTMarketContext.Provider>
     )

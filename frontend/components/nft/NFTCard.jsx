@@ -17,6 +17,7 @@ import {
 import { ethers } from 'ethers';
 import { useEffect, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
+import NFTTransferModal from './NFTTransferModal';
 
 const NFTCard = ({ nft }) => {
     const { listNFT, cancelListing, buyNFT } = useNFTMarketProvider()
@@ -175,7 +176,10 @@ const NFTCard = ({ nft }) => {
                     />
                     <Stack p='2'>
                         <Badge variant='outline' colorScheme='green'>{nft?.collection?.name}</Badge>
-                        <Text>{meta?.name}</Text>
+                        <Flex direction="row" justifyContent="space-between">
+                            <Text>{meta?.name}</Text>
+                            {address == nft.owner && <NFTTransferModal meta={meta} nft={nft} />}
+                        </Flex>
                         <Text>{minifyAddress(nft.owner)}</Text>
                     </Stack>
                 </CardBody>
