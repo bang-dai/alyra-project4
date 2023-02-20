@@ -82,7 +82,7 @@ export const ContractNFTProvider = ({ children }) => {
     const GetNFTsFromCollection = async (NFTCollectionAddr) => {
         const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, provider)
         const totalMinted = await c_NFTCollection.connect(address).getTotalMinted()
-        const collectionDetail = allCollectionsDetails.find(collection => collection.address == NFTCollectionAddr)
+
         setAllNFTs([])
         for (let tokenId = 0; tokenId < totalMinted; tokenId++) {
             const nft = {
@@ -90,12 +90,20 @@ export const ContractNFTProvider = ({ children }) => {
                 "price": await getPrice(tokenId, NFTCollectionAddr),
                 "tokenId": tokenId,
                 "uri": await c_NFTCollection.connect(address).tokenURI(tokenId),
-                "collection": collectionDetail
+                "collection": await getCollectionDetails(NFTCollectionAddr)
 
             }
+
             setAllNFTs(NFTs => [...NFTs, nft])
         }
     }
+
+    //get collection informations from his address
+    const getCollectionDetails = async (NFTCollectionAddr) => {
+        const parsedAllCollections = await parseNFTCollections([NFTCollectionAddr])
+        return parsedAllCollections[0]
+    }
+
 
     //update all collections only after init page
     const updateCollections = async () => {
@@ -179,7 +187,7 @@ export const ContractNFTProvider = ({ children }) => {
     return (
         <ContractNFTContext.Provider value={{
             contractAddress, Contract, address, isConnected,
-            createNFTCollection, createNFT, updateMyNFTs, GetNFTsFromCollection,
+            createNFTCollection, createNFT, updateMyNFTs, GetNFTsFromCollection, getCollectionDetails,
             myCollections, myCollectionsDetails, allCollectionsDetails, myNFTs, allNFTs
         }}>
             {children}

@@ -130,7 +130,7 @@ const NFTCard = ({ nft }) => {
                         fallbackSrc='https://via.placeholder.com/200'
                     />
                     <Stack p='2'>
-                        <Badge variant='outline' colorScheme='green'>{nft.collection.name}</Badge>
+                        <Badge variant='outline' colorScheme='green'>{nft?.collection?.name}</Badge>
                         <Text>{meta?.name}</Text>
                     </Stack>
                 </CardBody>
