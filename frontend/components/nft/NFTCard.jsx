@@ -1,5 +1,6 @@
+import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import { useNFTMarketProvider } from '@/context/NFTMarketContext';
-import { ipfsToHTTPS } from '@/helpers/helper';
+import { ipfsToHTTPS, minifyAddress } from '@/helpers/helper';
 import {
     Card, CardBody, CardFooter, Divider, Button, Image, Text, Stack, Flex, Badge, useDisclosure, Modal,
     ModalOverlay,
@@ -18,10 +19,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 const NFTCard = ({ nft }) => {
-    const { listNFT, cancelListing } = useNFTMarketProvider()
+    const { listNFT, cancelListing, buyNFT } = useNFTMarketProvider()
+    const { updateMyNFTs } = useContractNFTProvider()
     const [meta, setMeta] = useState()
     const [isLoading, setLoading] = useState(false)
     const [cancelText, setCancelText] = useState(ethers.utils.formatEther(nft.price) + " ETH")
+    const [buyText, setBuyText] = useState(ethers.utils.formatEther(nft.price) + " ETH")
     const { address, isConnected } = useAccount()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const inputPrice = useRef(null)
@@ -61,9 +64,14 @@ const NFTCard = ({ nft }) => {
                 status: 'success',
                 isClosable: true,
             })
-            //update my card price
+            //update my nft price
             nft.price = priceWei
             setCancelText(ethers.utils.formatEther(nft.price) + " ETH")
+            setBuyText(ethers.utils.formatEther(nft.price) + " ETH")
+
+            //synchronize my NFTs
+            await updateMyNFTs()
+
             //reset values
             inputPrice.current.value = null
             onClose()
@@ -89,6 +97,33 @@ const NFTCard = ({ nft }) => {
             })
             //update my card price
             nft.price = ethers.BigNumber.from("0")
+            //synchronize my NFTs
+            await updateMyNFTs()
+        }
+        catch (e) {
+            toast({
+                description: e.reason ?? "Une erreur inconnu s'est produite!",
+                status: 'error',
+                isClosable: true,
+            })
+        }
+        setLoading(false)
+    }
+
+    const handleBuy = async () => {
+        setLoading(true)
+        try {
+            await buyNFT(nft.tokenId, nft.collection.address, nft.price)
+            toast({
+                description: "NFT acheté avec succès.",
+                status: 'success',
+                isClosable: true,
+            })
+            //update my card price
+            nft.price = ethers.BigNumber.from("0")
+            nft.owner = address
+            //synchronize my NFTs
+            await updateMyNFTs()
         }
         catch (e) {
             toast({
@@ -113,7 +148,16 @@ const NFTCard = ({ nft }) => {
                 >{cancelText}</Button>
             }
         } else {
-            return <div>nothing</div>
+            if (nft.price.eq(ethers.BigNumber.from("0"))) {
+                return <Button width="100%">Pas en vente</Button>
+            } else {
+                return <Button width="100%"
+                    isLoading={isLoading}
+                    onClick={handleBuy}
+                    onMouseOver={() => setBuyText("Acheter")}
+                    onMouseOut={() => setBuyText(ethers.utils.formatEther(nft.price) + " ETH")}
+                >{buyText}</Button>
+            }
         }
     }
 
@@ -132,6 +176,7 @@ const NFTCard = ({ nft }) => {
                     <Stack p='2'>
                         <Badge variant='outline' colorScheme='green'>{nft?.collection?.name}</Badge>
                         <Text>{meta?.name}</Text>
+                        <Text>{minifyAddress(nft.owner)}</Text>
                     </Stack>
                 </CardBody>
                 <CardFooter p="0">

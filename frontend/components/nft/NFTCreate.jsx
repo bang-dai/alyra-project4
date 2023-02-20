@@ -50,7 +50,7 @@ const NFTCreate = () => {
                 isClosable: true,
             })
             //synchronize my NFTs
-            await updateMyNFTs(tokenId, NFTCollectionAddr, metadata.url)
+            await updateMyNFTs()
             //reset values
             selectCollection.current.value = null
             inputName.current.value = null

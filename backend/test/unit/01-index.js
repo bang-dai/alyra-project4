@@ -151,6 +151,16 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 //check if new owner has nft
                 const ownerAddr = await NFTCollection.ownerOf(tokenId)
                 assert.equal(ownerAddr, user2.address)
+
+                //user2 approve operator
+                const approve = await NFTCollection.connect(user2).setApprovalForAll(NFTMarketPlaceAddr, true)
+                await approve.wait()
+
+                //user2 relist his nft
+                const tx2 = await NFTMarketPlace.connect(user2).listNFT(tokenId, priceWei, NFTCollectionAddr)
+                await tx2.wait()
+                const transaction2 = await NFTMarketPlace.connect(user1).buyNFT(tokenId, NFTCollectionAddr, { value: priceWei })
+                await transaction2.wait()
             })
 
             it("Should revert if buyer attempt to buy his NFT", async function () {

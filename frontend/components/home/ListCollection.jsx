@@ -11,10 +11,8 @@ import NFTCard from '../nft/NFTCard';
 import { ipfsToHTTPS } from '@/helpers/helper';
 
 const ListCollection = ({ addr }) => {
-    const { GetNFTsFromCollection, allNFTs, getCollectionDetails } = useContractNFTProvider()
+    const { isConnected, GetNFTsFromCollection, allNFTs, getCollectionDetails } = useContractNFTProvider()
     const [collection, setCollection] = useState(null)
-
-
 
     useEffect(() => {
         const getOneCollectionDetails = async (NFTCollectionAddr) => {

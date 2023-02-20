@@ -170,16 +170,8 @@ export const ContractNFTProvider = ({ children }) => {
     }
 
     //update my NFT after creation
-    const updateMyNFTs = async (tokenId, NFTCollectionAddr, uri) => {
-        const collectionDetail = myCollectionsDetails.find(collection => collection.address == NFTCollectionAddr)
-        const nft = {
-            "owner": address,
-            "price": await getPrice(tokenId, NFTCollectionAddr),
-            "tokenId": tokenId,
-            "uri": uri,
-            "collection": collectionDetail
-        }
-        setMyNFTs(NFTs => [...NFTs, nft])
+    const updateMyNFTs = async () => {
+        getMyNFTs(allCollectionsDetails)
     }
 
 

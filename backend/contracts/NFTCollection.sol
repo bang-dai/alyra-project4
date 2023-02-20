@@ -48,7 +48,7 @@ contract NFTCollection is ERC721URIStorage, Ownable {
         uint256 tokenId = _nextTokenId();
         _safeMint(msg.sender, 1);
         _setTokenURI(tokenId, _uri);
-        //give permission for marketplace to trade our NFT
+        //give permission for marketplace to trade our NFT for the creator
         setApprovalForAll(marketplaceContract, true);
         emit NFTCreated(tokenId, _uri);
     }
