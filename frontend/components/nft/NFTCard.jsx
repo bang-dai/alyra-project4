@@ -43,7 +43,11 @@ const NFTCard = ({ nft }) => {
             });
         };
         fetchMetadata();
-    }, []);
+        //resynchronize price button when order items
+        setCancelText(ethers.utils.formatEther(nft.price) + " ETH")
+        setBuyText(ethers.utils.formatEther(nft.price) + " ETH")
+
+    }, [nft]);
 
     const handleSale = async () => {
         const price = inputPrice.current.value

@@ -82,10 +82,10 @@ export const ContractNFTProvider = ({ children }) => {
     const GetNFTsFromCollection = async (NFTCollectionAddr) => {
         const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, provider)
         const totalMinted = await c_NFTCollection.connect(address).getTotalMinted()
+        const tokenIds = [...Array(totalMinted.toNumber()).keys()]
 
-        setAllNFTs([])
-        for (let tokenId = 0; tokenId < totalMinted; tokenId++) {
-            const nft = {
+        const asyncNFTs = await Promise.all(tokenIds.map(async (tokenId) => {
+            return {
                 "owner": await c_NFTCollection.ownerOf(tokenId),
                 "price": await getPrice(tokenId, NFTCollectionAddr),
                 "tokenId": tokenId,
@@ -93,9 +93,9 @@ export const ContractNFTProvider = ({ children }) => {
                 "collection": await getCollectionDetails(NFTCollectionAddr)
 
             }
+        }))
 
-            setAllNFTs(NFTs => [...NFTs, nft])
-        }
+        return asyncNFTs
     }
 
     //get collection informations from his address

@@ -52,7 +52,7 @@ const NFTCreate = () => {
             //synchronize my NFTs
             await updateMyNFTs()
             //reset values
-            selectCollection.current.value = null
+            //selectCollection.current.value = null
             inputName.current.value = null
             inputDesc.current.value = null
             inputImage.current.value = null
