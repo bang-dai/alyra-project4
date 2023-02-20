@@ -55,7 +55,7 @@ const NFTCard = ({ nft }) => {
         setLoading(true)
         try {
             const priceWei = ethers.utils.parseEther(price)
-            await listNFT(nft.tokenId, priceWei, nft.collection.address)
+            await listNFT(nft.tokenId, nft.collection.address, priceWei)
             toast({
                 description: "NFT listé avec succès.",
                 status: 'success',
@@ -122,6 +122,7 @@ const NFTCard = ({ nft }) => {
             <Card width="200px" m="1rem">
                 <CardBody p="0">
                     <Image
+                        boxSize='200px'
                         objectFit='cover'
                         src={meta?.imageURL}
                         alt={meta?.name}

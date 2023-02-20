@@ -36,8 +36,7 @@ export const NFTMarketProvider = ({ children }) => {
         }
     }, [isConnected, address])
 
-    const listNFT = async (tokenId, priceWei, nftCollection) => {
-        //update price in myNFTs        
+    const listNFT = async (tokenId, nftCollection, priceWei) => {
         const tx = await contract.listNFT(tokenId, priceWei, nftCollection)
         await tx.wait()
     }
@@ -51,7 +50,7 @@ export const NFTMarketProvider = ({ children }) => {
 
     }
 
-    const getPrice = async (collectionAddr, tokenId) => {
+    const getPrice = async (tokenId, collectionAddr) => {
         const listing = await contractRead.connect(address).getListings(collectionAddr, tokenId)
         return listing.price //BigNumber
     }

@@ -4,7 +4,7 @@ import NFTList from '@/components/nft/NFTList';
 
 export default function MyNFTs() {
     return (
-        <Layout>
+        <Layout title="Mes NFTs">
             <NFTList />
         </Layout>
     )

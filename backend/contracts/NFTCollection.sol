@@ -4,12 +4,9 @@ pragma solidity 0.8.17;
 //attention: import le fichier car modification des visibilités _name et _symbol
 import "./ERC721URIStorage.sol";
 import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NFTCollection is ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
     address private marketplaceContract;
     //description of collection
     string private description;
@@ -48,8 +45,7 @@ contract NFTCollection is ERC721URIStorage, Ownable {
      * @param _uri only uri need, because metadata contains name, description and image ipfs
      */
     function createNFT(string memory _uri) external onlyOwner {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = _nextTokenId();
         _safeMint(msg.sender, 1);
         _setTokenURI(tokenId, _uri);
         //give permission for marketplace to trade our NFT
@@ -108,5 +104,13 @@ contract NFTCollection is ERC721URIStorage, Ownable {
             }
             return tokenIds;
         }
+    }
+
+    /**
+     * @notice get the total amount of tokens minted.
+     * @return uint the total amount of tokens minted.
+     */
+    function getTotalMinted() external view returns (uint256) {
+        return _totalMinted();
     }
 }

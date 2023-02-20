@@ -97,7 +97,7 @@ const NFTCreate = () => {
                             alt='Preview NFT'
                         />
                         <Stack>
-                            <CardHeader><Heading size='md'>Créer votre NFT</Heading></CardHeader>
+                            <CardHeader><Heading size='md'>Informations</Heading></CardHeader>
                             <CardBody>
                                 <Input placeholder='Nom*' ref={inputName} />
                                 <Textarea placeholder='Description' ref={inputDesc} />

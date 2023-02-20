@@ -3,7 +3,7 @@ import NFTCreate from '@/components/nft/NFTCreate';
 
 export default function Create() {
     return (
-        <Layout>
+        <Layout title="Créer mon NFT">
             <NFTCreate />
         </Layout>
     )

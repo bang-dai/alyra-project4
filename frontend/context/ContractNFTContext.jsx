@@ -28,8 +28,10 @@ export const ContractNFTProvider = ({ children }) => {
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
     //all collections NFT with details
     const [allCollectionsDetails, setAllCollectionsDetails] = useState([])
-    //my token URIs list
+    //my NFTs list
     const [myNFTs, setMyNFTs] = useState([])
+    //all NFTs list from one collection
+    const [allNFTs, setAllNFTs] = useState([])
 
     const { address, isConnected } = useAccount()
     //get signer && provider to call SC function
@@ -56,6 +58,7 @@ export const ContractNFTProvider = ({ children }) => {
             setMyCollectionsDetails([])
             setAllCollectionsDetails([])
             setMyNFTs([])
+            setAllNFTs([])
         }
     }, [isConnected, address])
 
@@ -73,6 +76,25 @@ export const ContractNFTProvider = ({ children }) => {
         const tx = await c_NFTCollection.createNFT(uri)
         const receipt = await tx.wait()
         return receipt.events[0].args.tokenId
+    }
+
+    //3) in collection page, get all NFTs of this collection
+    const GetNFTsFromCollection = async (NFTCollectionAddr) => {
+        const c_NFTCollection = new ethers.Contract(NFTCollectionAddr, ContractCollection.abi, provider)
+        const totalMinted = await c_NFTCollection.connect(address).getTotalMinted()
+        const collectionDetail = allCollectionsDetails.find(collection => collection.address == NFTCollectionAddr)
+        setAllNFTs([])
+        for (let tokenId = 0; tokenId < totalMinted; tokenId++) {
+            const nft = {
+                "owner": await c_NFTCollection.ownerOf(tokenId),
+                "price": await getPrice(tokenId, NFTCollectionAddr),
+                "tokenId": tokenId,
+                "uri": await c_NFTCollection.connect(address).tokenURI(tokenId),
+                "collection": collectionDetail
+
+            }
+            setAllNFTs(NFTs => [...NFTs, nft])
+        }
     }
 
     //update all collections only after init page
@@ -128,7 +150,7 @@ export const ContractNFTProvider = ({ children }) => {
             tokenIds.map(async (tokenId) => {
                 const nft = {
                     "owner": address,
-                    "price": await getPrice(NFTCollection.address, tokenId),
+                    "price": await getPrice(tokenId, NFTCollection.address),
                     "tokenId": tokenId,
                     "uri": await c_NFTCollection.connect(address).tokenURI(tokenId),
                     "collection": NFTCollection
@@ -144,7 +166,7 @@ export const ContractNFTProvider = ({ children }) => {
         const collectionDetail = myCollectionsDetails.find(collection => collection.address == NFTCollectionAddr)
         const nft = {
             "owner": address,
-            "price": await getPrice(NFTCollectionAddr, tokenId),
+            "price": await getPrice(tokenId, NFTCollectionAddr),
             "tokenId": tokenId,
             "uri": uri,
             "collection": collectionDetail
@@ -157,8 +179,8 @@ export const ContractNFTProvider = ({ children }) => {
     return (
         <ContractNFTContext.Provider value={{
             contractAddress, Contract, address, isConnected,
-            createNFTCollection, createNFT, updateMyNFTs,
-            myCollections, myCollectionsDetails, allCollectionsDetails, myNFTs
+            createNFTCollection, createNFT, updateMyNFTs, GetNFTsFromCollection,
+            myCollections, myCollectionsDetails, allCollectionsDetails, myNFTs, allNFTs
         }}>
             {children}
         </ContractNFTContext.Provider>

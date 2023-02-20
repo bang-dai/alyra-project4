@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { useState } from 'react';
-import { Box, Center, Flex, useBreakpointValue } from '@chakra-ui/react';
+import { Box, Center, Flex, Heading, useBreakpointValue } from '@chakra-ui/react';
 import Header from './Header';
 import Footer from './Footer';
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
@@ -8,7 +8,7 @@ import { useContractNFTProvider } from '@/context/ContractNFTContext';
 const smVariant = { navigation: 'drawer', showSidebarButton: true }
 const mdVariant = { navigation: 'sidebar', showSidebarButton: false }
 
-const Layout = ({ children }) => {
+const Layout = ({ children, title }) => {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
     const variants = useBreakpointValue({ base: smVariant, md: mdVariant })
     const toggleSidebar = () => setSidebarOpen(!isSidebarOpen)
@@ -29,7 +29,11 @@ const Layout = ({ children }) => {
                 />
                 <Flex justifyContent="center" minH={'80vh'}>
                     {isConnected ? (
-                        <>{children}</>
+                        <Flex direction="column" alignItems="center">
+                            <Heading>{title}</Heading>
+                            {children}
+                        </Flex>
+
                     ) : (
                         <Center>Veuillez vous connecter!</Center>
                     )

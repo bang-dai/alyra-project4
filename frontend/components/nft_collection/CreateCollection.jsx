@@ -1,7 +1,8 @@
 import { useContractNFTProvider } from '@/context/ContractNFTContext';
 import { Input, Text, Textarea, Card, CardHeader, CardBody, CardFooter, Stack, Heading, Button, Image, Flex, useToast, SimpleGrid, Divider, Badge } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
-import { storeNFT } from '@/helpers/helper';
+import { ipfsToHTTPS, storeNFT } from '@/helpers/helper';
+import CollectionCard from '../home/CollectionCard';
 
 const CreateCollection = () => {
     const preview = "https://via.placeholder.com/300"
@@ -92,22 +93,27 @@ const CreateCollection = () => {
                 </Stack>
             </Card>
             <Divider orientation='horizontal' mt="1rem" mb="1rem" />
-            <SimpleGrid spacing={4} templateColumns='repeat(auto-fill, minmax(200px, 1fr))'>
+            <Flex direction="row" wrap="wrap" alignItems="center">
                 {myCollectionsDetails && myCollectionsDetails.map((collection, index) =>
-                    <Card key={index}>
-                        <CardHeader>
-                            <Heading size='md'>{collection.name}</Heading>
-                            <Badge variant='outline' colorScheme='green'>{collection.symbol}</Badge>
-                        </CardHeader>
-                        <CardBody>
-                            <Text>{collection.description}</Text>
+                    <Card width="300" m="1rem" key={index}>
+                        <CardBody p="0">
+                            <Image
+                                boxSize="200px"
+                                objectFit='cover'
+                                src={ipfsToHTTPS(collection?.image)}
+                                alt={collection?.name}
+                                borderRadius='lg'
+                                fallbackSrc='https://via.placeholder.com/300x200'
+                            />
+                            <Stack p='6' spacing='3'>
+                                <Badge variant='outline' colorScheme='green' textAlign="center">{collection.name}</Badge>
+                                <Button>Modifier</Button>
+                            </Stack>
                         </CardBody>
-                        <CardFooter>
-                            <Button>Gérer la collection</Button>
-                        </CardFooter>
                     </Card>
                 )}
-            </SimpleGrid>
+            </Flex>
+
         </Flex>
     );
 };

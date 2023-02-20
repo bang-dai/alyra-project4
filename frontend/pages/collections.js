@@ -3,7 +3,7 @@ import CreateCollection from '@/components/nft_collection/CreateCollection';
 
 export default function Collections() {
     return (
-        <Layout>
+        <Layout title="Mes collections">
             <CreateCollection />
         </Layout>
     )
