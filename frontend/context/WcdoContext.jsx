@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { ethers } from "ethers";
-import Contract from '../../backend/artifacts/contracts/Wcdo.sol/Wcdo.json' //update here
+import Contract from '../contract/Wcdo.json' //update here
 import { useAccount, useBalance, useProvider, useSigner } from "wagmi";
 
 const WcdoContext = React.createContext(null)
@@ -34,7 +34,6 @@ export const WcdoProvider = ({ children }) => {
     const contractRead = new ethers.Contract(contractAddress, Contract.abi, provider)
 
     useEffect(() => {
-        console.log("in")
         if (isConnected) {
             updateData()
         }
