@@ -9,12 +9,12 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract Wcdo is ERC721A, Ownable {
     using Strings for uint256;
     uint256 private constant MAX_NFT_PER_ADDR = 2;
-    uint256 private constant MAX_SUPPLY = 500;
+    uint256 private constant MAX_SUPPLY = 1000;
 
     mapping(address => uint256) minted;
-    string baseURI; //get URI from NFT.storage
+    string baseURI; //get IPFS from NFT.storage
 
-    constructor() ERC721A("Wcdo NFT", "WCDO") {}
+    constructor() ERC721A("Wcdo official collection", "WCDO") {}
 
     function tokenURI(uint256 _tokenId)
         public
@@ -24,11 +24,15 @@ contract Wcdo is ERC721A, Ownable {
         returns (string memory)
     {
         require(_exists(_tokenId), "URI query for nonexistent token");
-        return string(abi.encodePacked(baseURI, _tokenId.toString()));
+        return string(abi.encodePacked(baseURI, _tokenId.toString(), ".json"));
     }
 
     function setBaseURI(string memory _baseURI) external onlyOwner {
         baseURI = _baseURI;
+    }
+
+    function getBaseURI() external view onlyOwner returns (string memory) {
+        return baseURI;
     }
 
     function mint(uint256 _qt) external {
