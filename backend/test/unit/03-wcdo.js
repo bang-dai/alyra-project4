@@ -37,14 +37,24 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await expect(tx).to.be.revertedWith("You can only mint 2 NFTs");
             })
 
+            it("Should revert because not enought fund", async function () {
+                const tx = Wcdo.mint(2, { value: ethers.utils.parseEther("0.1") })
+                await expect(tx).to.be.revertedWith("Not enough funds provided")
+            })
+
             it("Should mint one NFT", async function () {
-                const tx = await Wcdo.mint(1)
+                const tx = await Wcdo.mint(1, { value: ethers.utils.parseEther("0.1") })
                 await tx.wait()
             })
 
             it("Should get correct URI for nft #0", async function () {
                 const uri = await Wcdo.tokenURI(0)
                 assert.equal(uri, `${baseURI}0.json`)
+            })
+
+            it("Should withdraw the fund from SC", async function () {
+                const tx = await Wcdo.withdraw()
+                await expect(tx).to.emit(Wcdo, "Withdraw").withArgs(deployer.address, ethers.utils.parseEther("0.1"))
             })
         })
     })
