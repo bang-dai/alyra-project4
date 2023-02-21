@@ -66,9 +66,20 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 assert.equal(expectImageURL, imageURL)
             })
 
-            it("Should get my collection address", async function () {
+            it("Should get my created collection address", async function () {
                 const myCollections = await NFTCollectionFactory.connect(user1).getMyCollections()
                 assert.equal(NFTCollectionAddr, myCollections[0])
+            })
+
+            it("Should get all created collection address", async function () {
+                const name = "bored"
+                const symbol = "bayc"
+                const tx = await NFTCollectionFactory.deploy(name, symbol, "ape follow ape", imageURL, user2.address, NFTMarketPlaceAddr)
+                await expect(tx).to.emit(NFTCollectionFactory, "NFTCollectionCreated").withArgs(name, symbol)
+                await tx.wait()
+
+                const allCollections = await NFTCollectionFactory.getNFTCollections()
+                assert.equal(2, allCollections.length)
             })
         })
 
@@ -77,6 +88,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const tokenId = await createNFT()
                 const mintedUri = await NFTCollection.tokenURI(tokenId)
                 assert.equal(mintedUri, baseURI)
+            })
+
+            it("Should get all tokenIds from user1", async function () {
+                const tokenIds = await NFTCollection.tokensOfOwner(user1.address)
+                assert.equal(tokenIds.length, mintId)
             })
         })
 
@@ -97,10 +113,16 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const tokenId = await createNFT()
                 const tx = await NFTMarketPlace.connect(user1).listNFT(tokenId, 10, NFTCollectionAddr)
                 await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
+            })
 
-                //check if new owner has nft
-                // const ownerAddr = await NFTCollection.ownerOf(tokenId)
-                // assert.equal(ownerAddr, NFTMarketPlace.address)
+            it("should get infos about my listing", async function () {
+                const tokenId = await createNFT()
+                const tx = await NFTMarketPlace.connect(user1).listNFT(tokenId, 10, NFTCollectionAddr)
+                await expect(tx).to.emit(NFTMarketPlace, "NFTListed").withArgs(tokenId, 10)
+
+                const listing = await NFTMarketPlace.connect(user1).getListings(NFTCollectionAddr, tokenId)
+                assert.equal(listing.seller, user1.address)
+                assert.equal(listing.price.toString(), 10)
             })
         })
 
@@ -176,9 +198,8 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
         describe("CancelListing", function () {
             it("Should revert if NFT is not listed", async function () {
-                const price = "10"; //10eth                
                 const tokenId = await createNFT()
-                const tx = NFTMarketPlace.connect(user1).cancelListing(7, NFTCollectionAddr)
+                const tx = NFTMarketPlace.connect(user1).cancelListing(tokenId, NFTCollectionAddr)
                 await expect(tx).to.be.revertedWith("NFT not listed for sale!");
             })
 
@@ -214,11 +235,25 @@ const { developmentChains } = require("../../helper-hardhat-config")
 
             it("Should minted equal to 10", async function () {
                 const total = await NFTCollection.connect(user1).getTotalMinted()
-                assert.equal(total, 10)
+                assert.equal(total.toString(), mintId)
             })
         })
 
+        describe("Transfer NFT", function () {
+            it("should revert because not the owner", async function () {
+                const tokenId = await createNFT()
+                const tx = NFTMarketPlace.connect(user2).tranfert(tokenId, NFTCollectionAddr, user1.address)
+                await expect(tx).to.be.revertedWith("You are not the owner of the token.");
+            })
 
+            it("should transfer correctly to user1", async function () {
+                const tokenId = await createNFT()
+                const tx = await NFTMarketPlace.connect(user1).tranfert(tokenId, NFTCollectionAddr, user2.address)
+                await tx.wait()
+                const owner = await NFTCollection.ownerOf(tokenId)
+                assert.equal(owner, user2.address)
+            })
+        })
 
         describe("Withdraw", function () {
             it("Should revert if caller is not the owner", async function () {

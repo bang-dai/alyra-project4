@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "erc721a/contracts/ERC721A.sol";
-import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
+import "erc721a/contracts/extensions/ERC721AQueryable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract Wcdo is ERC721A, Ownable {
+contract Wcdo is ERC721AQueryable, Ownable {
     using Strings for uint256;
     uint8 private constant MAX_NFT_PER_ADDR = 2;
     uint16 private constant MAX_SUPPLY = 1000;
@@ -30,7 +29,7 @@ contract Wcdo is ERC721A, Ownable {
         public
         view
         virtual
-        override(ERC721A)
+        override(ERC721A, IERC721A)
         returns (string memory)
     {
         require(_exists(_tokenId), "URI query for nonexistent token");
@@ -98,43 +97,6 @@ contract Wcdo is ERC721A, Ownable {
     function getImageURL() external pure returns (string memory) {
         return
             "ipfs://bafybeihh3kcqs46r3ste5pmybepqcr3mc276thkfkjnxcezclcp3cstwo4/0.png";
-    }
-
-    /**
-     * @notice get tokenIds of the owner
-     * @param owner the owner address
-     * @return array of tokenIds of the owner
-     */
-    function tokensOfOwner(address owner)
-        external
-        view
-        virtual
-        returns (uint256[] memory)
-    {
-        unchecked {
-            uint256 tokenIdsIdx;
-            address currOwnershipAddr;
-            uint256 tokenIdsLength = balanceOf(owner);
-            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
-            TokenOwnership memory ownership;
-            for (
-                uint256 i = _startTokenId();
-                tokenIdsIdx != tokenIdsLength;
-                ++i
-            ) {
-                ownership = _ownershipAt(i);
-                if (ownership.burned) {
-                    continue;
-                }
-                if (ownership.addr != address(0)) {
-                    currOwnershipAddr = ownership.addr;
-                }
-                if (currOwnershipAddr == owner) {
-                    tokenIds[tokenIdsIdx++] = i;
-                }
-            }
-            return tokenIds;
-        }
     }
 
     /**

@@ -71,5 +71,10 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const desc = await Wcdo.getDescription()
                 assert.equal(desc, "Wcdo official collection")
             })
+
+            it("Should get x totalMinted", async function () {
+                const total = await Wcdo.getTotalMinted()
+                assert.equal(total, 1)
+            })
         })
     })
