@@ -5,7 +5,7 @@ const nftstorage = new NFTStorage({ token: NFT_STORAGE_KEY })
 export const ipfsToHTTPS = (url) => {
     if (!url.startsWith("ipfs://")) throw new Error("Not an IPFS url");
     const cid = url.substring(7);
-    return `https://gateway.ipfs.io/ipfs/${cid}`;
+    return `https://nftstorage.link/ipfs/${cid}`;
 };
 
 export const minifyAddress = (address) => {

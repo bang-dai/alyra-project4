@@ -15,7 +15,11 @@ contract Wcdo is ERC721A, Ownable {
     mapping(address => uint256) minted;
     event Withdraw(address owner, uint256 amount);
 
-    constructor() ERC721A("Wcdo official collection", "WCDO") {}
+    constructor(string memory _baseURI)
+        ERC721A("Wcdo official collection", "WCDO")
+    {
+        baseURI = _baseURI;
+    }
 
     /**
      * @notice Get tokenURI
@@ -77,5 +81,67 @@ contract Wcdo is ERC721A, Ownable {
         if (success) {
             emit Withdraw(owner(), balance);
         }
+    }
+
+    /**
+     * @notice get description of collection
+     * @return string description
+     */
+    function getDescription() external pure returns (string memory) {
+        return "Wcdo official collection";
+    }
+
+    /**
+     * @notice get cover of collection
+     * @return string cover image
+     */
+    function getImageURL() external pure returns (string memory) {
+        return
+            "ipfs://bafybeihh3kcqs46r3ste5pmybepqcr3mc276thkfkjnxcezclcp3cstwo4/0.png";
+    }
+
+    /**
+     * @notice get tokenIds of the owner
+     * @param owner the owner address
+     * @return array of tokenIds of the owner
+     */
+    function tokensOfOwner(address owner)
+        external
+        view
+        virtual
+        returns (uint256[] memory)
+    {
+        unchecked {
+            uint256 tokenIdsIdx;
+            address currOwnershipAddr;
+            uint256 tokenIdsLength = balanceOf(owner);
+            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
+            TokenOwnership memory ownership;
+            for (
+                uint256 i = _startTokenId();
+                tokenIdsIdx != tokenIdsLength;
+                ++i
+            ) {
+                ownership = _ownershipAt(i);
+                if (ownership.burned) {
+                    continue;
+                }
+                if (ownership.addr != address(0)) {
+                    currOwnershipAddr = ownership.addr;
+                }
+                if (currOwnershipAddr == owner) {
+                    tokenIds[tokenIdsIdx++] = i;
+                }
+            }
+            return tokenIds;
+        }
+    }
+
+    /**
+     * @notice get the total amount of tokens minted.
+     * @return uint the total amount of tokens minted.
+     */
+    function getTotalMinted() external view returns (uint256) {
+        return _totalMinted();
     }
 }

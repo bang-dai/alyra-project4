@@ -21,7 +21,7 @@ const Header = ({ showSidebarButton = true, onShowSidebar }) => {
                 <Link href="/mynfts"><Button m="1rem">Mes NFTs</Button></Link>
                 <Link href="/collections"><Button m="1rem">Mes collections</Button></Link>
                 <Link href="/create"><Button m="1rem">Créer</Button></Link>
-                <Button m="1rem">Minter</Button>
+                <Link href="/wcdo"><Button m="1rem">Minter</Button></Link>
             </Flex>
             <Flex>
                 <IconButton aria-label="Toggle Mode" onClick={toggleColorMode} mr='2rem'>

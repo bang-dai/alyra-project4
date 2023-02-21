@@ -19,11 +19,11 @@ export function useContractNFTProvider() {
 export const ContractNFTProvider = ({ children }) => {
     const contractAddress = process.env.NEXT_PUBLIC_FACTORY_ADDR
     const marketplaceAddr = process.env.NEXT_PUBLIC_MARKETPLACE_ADDR
+    const wcdoContractAddress = process.env.NEXT_PUBLIC_WCDO_ADDR
     const { getPrice } = useNFTMarketProvider()
     //addresses of my collections NFT
     const [myCollections, setMyCollections] = useState([])
-    //addresses of all collections NFT
-    //const [allCollections, setAllCollections] = useState([])
+
     //my collections NFT with details
     const [myCollectionsDetails, setMyCollectionsDetails] = useState([])
     //all collections NFT with details
@@ -122,8 +122,9 @@ export const ContractNFTProvider = ({ children }) => {
 
     //get all created collection addr
     const getNFTCollections = async () => {
-        const allCollectionsAddr = await contractRead.connect(address).getNFTCollections()
-        //setAllCollections(collections)
+        let allCollectionsAddr = await contractRead.connect(address).getNFTCollections()
+        //add wcdo sc address
+        allCollectionsAddr = [...allCollectionsAddr, wcdoContractAddress]
         //add collection details
         const parsedAllCollections = await parseNFTCollections(allCollectionsAddr)
         setAllCollectionsDetails(parsedAllCollections)

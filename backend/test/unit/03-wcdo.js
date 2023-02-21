@@ -47,6 +47,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 await tx.wait()
             })
 
+            it("Should get correct baseURI", async function () {
+                const uri = await Wcdo.getBaseURI()
+                assert.equal(uri, baseURI)
+            })
+
             it("Should get correct URI for nft #0", async function () {
                 const uri = await Wcdo.tokenURI(0)
                 assert.equal(uri, `${baseURI}0.json`)
@@ -55,6 +60,16 @@ const { developmentChains } = require("../../helper-hardhat-config")
             it("Should withdraw the fund from SC", async function () {
                 const tx = await Wcdo.withdraw()
                 await expect(tx).to.emit(Wcdo, "Withdraw").withArgs(deployer.address, ethers.utils.parseEther("0.1"))
+            })
+
+            it("Should get correct image cover URL", async function () {
+                const url = await Wcdo.getImageURL()
+                assert.equal(url, "ipfs://bafybeihh3kcqs46r3ste5pmybepqcr3mc276thkfkjnxcezclcp3cstwo4/0.png")
+            })
+
+            it("Should get correct description", async function () {
+                const desc = await Wcdo.getDescription()
+                assert.equal(desc, "Wcdo official collection")
             })
         })
     })

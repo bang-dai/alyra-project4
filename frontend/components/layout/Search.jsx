@@ -9,7 +9,7 @@ function Search() {
 
     return (
         <Flex justify="center" align="center" w="full" direction="column">
-            <FormControl w="60">
+            <FormControl w="80">
                 <AutoComplete openOnFocus>
                     <AutoCompleteInput placeholder="Rechercher une collection" />
                     {allCollectionsDetails?.length > 0 &&
@@ -19,8 +19,7 @@ function Search() {
                                     key={`option-${index}`}
                                     value={collection.name}
                                     textTransform="capitalize"
-                                    align="center"
-                                >
+                                    align="center">
                                     <Link href={`/collection/${collection.address}`}>
                                         <Flex direction="row" alignItems="center" wrap="wrap">
                                             <Avatar size="sm" name={collection.name} src={ipfsToHTTPS(collection.image)} />
